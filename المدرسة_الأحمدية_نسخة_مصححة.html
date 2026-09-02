@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>تطبيق المدرسة الأحمدية</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+
+<!-- Firebase: Auth + Firestore -->
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+
+<script>
+  // ===================== ضع إعدادات مشروع Firebase هنا =====================
+  const firebaseConfig = {
+    apiKey: "ضع_API_KEY_هنا",
+    authDomain: "ضع_PROJECT_ID.firebaseapp.com",
+    projectId: "ضع_PROJECT_ID_هنا",
+    storageBucket: "ضع_PROJECT_ID.firebasestorage.app",
+    messagingSenderId: "ضع_SENDER_ID_هنا",
+    appId: "ضع_APP_ID_هنا"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+</script>
+</head>
+<body style="margin:0;background:#e5e2d8">
+<div id="root"></div>
+
+<script type="text/babel">
+const {useState,useEffect,useCallback}=React;
+
+const Icon=({name,size=18,className="",style={},onClick})=>{
+  useEffect(()=>{ if(window.lucide) window.lucide.createIcons(); });
+  return <i data-lucide={name} className={className}
+    style={{width:size,height:size,display:"inline-block",verticalAlign:"middle",...style}}
+    onClick={onClick}></i>
+};
+const Lock=p=><Icon name="lock" {...p}/>, Unlock=p=><Icon name="unlock" {...p}/>,
+BookOpen=p=><Icon name="book-open" {...p}/>, ChevronLeft=p=><Icon name="chevron-left" {...p}/>,
+ChevronDown=p=><Icon name="chevron-down" {...p}/>, ArrowRight=p=><Icon name="arrow-right" {...p}/>,
+LogOut=p=><Icon name="log-out" {...p}/>, Plus=p=><Icon name="plus" {...p}/>,
+Trash2=p=><Icon name="trash-2" {...p}/>, Pencil=p=><Icon name="pencil" {...p}/>,
+Check=p=><Icon name="check" {...p}/>, X=p=><Icon name="x" {...p}/>,
+ShieldCheck=p=><Icon name="shield-check" {...p}/>, GraduationCap=p=><Icon name="graduation-cap" {...p}/>,
+User=p=><Icon name="user" {...p}/>, Loader2=p=><Icon name="loader-2" {...p}/>,
+Layers=p=><Icon name="layers" {...p}/>, FolderOpen=p=><Icon name="folder-open" {...p}/>,
+Music=p=><Icon name="music" {...p}/>, UsersIcon=p=><Icon name="users" {...p}/>;
+
+const emptyCurriculum={stages:[],sections:{},books:{}};
+
+function Switch({checked,onChange}){return <label className="man-switch"><input type="checkbox" checked={checked} onChange={e=>onChange(e.target.checked)}/><span className="man-switch-track"><span className="man-switch-thumb"/></span></label>}
+
+function ConfirmDelete({onConfirm,label}) {
+  const [pending,setPending]=useState(false);
+  if(!pending) return <button className="man-icon-btn man-icon-danger" title={label||"حذف"} onClick={()=>setPending(true)}><Trash2 size={16}/></button>;
+  return <span className="man-confirm-row">
+    <button className="man-icon-btn man-icon-danger" onClick={()=>{setPending(false);onConfirm()}}><Check size={16}/></button>
+    <button className="man-icon-btn" onClick={()=>setPending(false)}><X size={16}/></button>
+  </span>
+}
+function InlineAdd({placeholder,onAdd,extra}) {
+  const [open,setOpen]=useState(false),[val,setVal]=useState(""),[extraVal,setExtraVal]=useState("");
+  const submit=()=>{if(!val.trim())return;onAdd(val.trim(),extraVal.trim());setVal("");setExtraVal("");setOpen(false)};
+  if(!open)return <button className="man-add-trigger" onClick={()=>setOpen(true)}><Plus size={15}/>{placeholder}</button>;
+  return <div className="man-add-form">
+    <input className="man-input" autoFocus placeholder={placeholder} value={val} onChange={e=>setVal(e.target.value)} onKeyDown={e=>e.key==="Enter"&&!extra&&submit()}/>
+    {extra&&<input className="man-input" placeholder={extra} value={extraVal} onChange={e=>setExtraVal(e.target.value)} onKeyDown={e=>e.key==="Enter"&&submit()}/>}
+    <div className="man-add-actions"><button className="man-btn man-btn-primary man-btn-sm" onClick={submit}>إضافة</button><button className="man-btn man-btn-ghost man-btn-sm" onClick={()=>{setOpen(false);setVal("");setExtraVal("")}}>إلغاء</button></div>
+  </div>
+}
+function EditableTitle({value,onSave,className}) {
+  const [editing,setEditing]=useState(false),[val,setVal]=useState(value);
+  if(!editing)return <span className={className} style={{display:"flex",alignItems:"center",gap:6}}>{value}<Pencil size={12} className="man-edit-icon" onClick={e=>{e.stopPropagation();setVal(value);setEditing(true)}}/></span>;
+  return <span style={{display:"flex",gap:6,alignItems:"center"}} onClick={e=>e.stopPropagation()}>
+    <input className="man-input man-input-sm" value={val} onChange={e=>setVal(e.target.value)} autoFocus/>
+    <button className="man-icon-btn" onClick={()=>{if(val.trim())onSave(val.trim());setEditing(false)}}><Check size={14}/></button>
+    <button className="man-icon-btn" onClick={()=>setEditing(false)}><X size={14}/></button>
+  </span>
+}
+
+function AuthScreen({onLogin,onRegister,error,busy}) {
+  const [mode,setMode]=useState("login"),[username,setUsername]=useState(""),[password,setPassword]=useState(""),[confirm,setConfirm]=useState("");
+  const submit=()=>mode==="login"?onLogin(username.trim(),password):onRegister(username.trim(),password,confirm);
+  return <div className="man-auth">
+    <div className="man-auth-hero"><div className="man-logo"><BookOpen size={30}/></div><h1 className="man-app-title">المدرسة الأحمدية</h1><p className="man-app-sub">مراحل علمية مرتّبة، تُفتح لك خطوة بخطوة</p></div>
+    <div className="man-tabs">
+      <button className={`man-tab ${mode==="login"?"man-tab-active":""}`} onClick={()=>setMode("login")}>تسجيل الدخول</button>
+      <button className={`man-tab ${mode==="register"?"man-tab-active":""}`} onClick={()=>setMode("register")}>إنشاء حساب</button>
+    </div>
+    <div className="man-auth-form">
+      <label className="man-label">اسم المستخدم</label><input className="man-input" value={username} onChange={e=>setUsername(e.target.value)} placeholder="مثال: ahmad_92"/>
+      <label className="man-label">كلمة المرور</label><input className="man-input" type="password" value={password} onChange={e=>setPassword(e.target.value)} placeholder="••••••••"/>
+      {mode==="register"&&<><label className="man-label">تأكيد كلمة المرور</label><input className="man-input" type="password" value={confirm} onChange={e=>setConfirm(e.target.value)} placeholder="••••••••"/></>}
+      {error&&<div className="man-error">{error}</div>}
+      <button className="man-btn man-btn-primary man-btn-full" onClick={submit} disabled={busy}>{busy?<Loader2 size={16} className="man-spin"/>:(mode==="login"?"دخول":"إنشاء الحساب")}</button>
+    </div>
+  </div>
+}
+
+function BackBar({onBack,title}){return <button className="man-backbar" onClick={onBack}><ArrowRight size={18}/><span>{title||"رجوع"}</span></button>}
+function EmptyState({text}){return <div className="man-empty"><Layers size={26}/><p>{text}</p></div>}
+
+function StudentApp({curriculum,profile}) {
+  const [nav,setNav]=useState({screen:"stages",stageId:null,sectionId:null,bookId:null}),[toast,setToast]=useState("");
+  useEffect(()=>{if(!toast)return;const t=setTimeout(()=>setToast(""),2200);return()=>clearTimeout(t)},[toast]);
+  const unlockedStageIds=profile?.unlockedStageIds||[];
+  const stages=[...curriculum.stages].sort((a,b)=>a.order-b.order);
+  const stage=curriculum.stages.find(s=>s.id===nav.stageId),sections=nav.stageId?(curriculum.sections[nav.stageId]||[]):[];
+  const section=sections.find(s=>s.id===nav.sectionId),books=nav.sectionId?(curriculum.books[nav.sectionId]||[]):[],book=books.find(b=>b.id===nav.bookId);
+  const goStages=()=>setNav({screen:"stages",stageId:null,sectionId:null,bookId:null});
+  const goSections=id=>{if(!unlockedStageIds.includes(id)){setToast("هذه المرحلة مغلقة حاليًا. تواصل مع المشرف لفتحها لك.");return}setNav({screen:"sections",stageId:id,sectionId:null,bookId:null})};
+  const goBooks=id=>setNav(n=>({...n,screen:"books",sectionId:id,bookId:null}));
+  const goLessons=id=>setNav(n=>({...n,screen:"lessons",bookId:id}));
+  return <div className="man-body">
+    {toast&&<div className="man-toast">{toast}</div>}
+    {nav.screen==="stages"&&<><p className="man-section-label">المراحل الدراسية</p>{stages.length===0&&<EmptyState text="لم يقم المشرف بإضافة أي مرحلة بعد."/>}
+      {stages.map((s,i)=>{const unlocked=unlockedStageIds.includes(s.id),secCount=(curriculum.sections[s.id]||[]).length;return <div key={s.id} className={`man-card man-stage-card ${unlocked?"man-stage-unlocked":"man-stage-locked"}`} onClick={()=>goSections(s.id)}>
+        <div className="man-badge-num">{i+1}</div><div className="man-stage-info"><div className="man-stage-name">{s.name}</div><div className="man-stage-meta">{secCount} قسم</div></div>{unlocked?<Unlock size={18} className="man-lock-icon man-lock-open"/>:<Lock size={18} className="man-lock-icon" />}
+      </div>})}</>}
+    {nav.screen==="sections"&&<><BackBar onBack={goStages} title={stage?.name}/>{sections.length===0&&<EmptyState text="لا توجد أقسام في هذه المرحلة بعد."/>}{sections.map(sec=><div key={sec.id} className="man-card man-row" onClick={()=>goBooks(sec.id)}><FolderOpen size={18} className="man-row-icon"/><div className="man-row-body"><div className="man-row-title">{sec.name}</div><div className="man-row-meta">{(curriculum.books[sec.id]||[]).length} كتاب</div></div><ChevronLeft size={18} className="man-chev"/></div>)}</>}
+    {nav.screen==="books"&&<><BackBar onBack={()=>setNav(n=>({...n,screen:"sections",bookId:null}))} title={section?.name}/>{books.length===0&&<EmptyState text="لا توجد كتب في هذا القسم بعد."/>}{books.map(b=><div key={b.id} className="man-card man-row" onClick={()=>goLessons(b.id)}><BookOpen size={18} className="man-row-icon"/><div className="man-row-body"><div className="man-row-title">{b.name}</div><div className="man-row-meta">{(b.lessons||[]).length} درس</div></div><ChevronLeft size={18} className="man-chev"/></div>)}</>}
+    {nav.screen==="lessons"&&<><BackBar onBack={()=>setNav(n=>({...n,screen:"books",bookId:null}))} title={book?.name}/>{(!book||(book.lessons||[]).length===0)&&<EmptyState text="لم تُضَف دروس لهذا الكتاب بعد."/>}{book&&(book.lessons||[]).map(l=><div key={l.id} className="man-card man-lesson-card"><div className="man-row-title" style={{display:"flex",alignItems:"center",gap:8}}><Music size={16} className="man-row-icon"/>{l.name}</div>{l.audioUrl?<audio controls src={l.audioUrl} className="man-audio"/>:<p className="man-hint" style={{margin:"6px 0 0"}}>لم يُضَف الدرس الصوتي لهذا الدرس بعد.</p>}</div>)}</>}
+  </div>
+}
+
+function AdminContent({curriculum,setCurriculum}) {
+  const [expandedStage,setExpandedStage]=useState(null),[expandedSection,setExpandedSection]=useState(null),[expandedBook,setExpandedBook]=useState(null);
+  const update=(fn)=>{const next=structuredClone(curriculum);fn(next);setCurriculum(next)};
+  const addStage=name=>update(c=>c.stages.push({id:crypto.randomUUID(),name,order:c.stages.length}));
+  const renameStage=(id,name)=>update(c=>{const s=c.stages.find(x=>x.id===id);if(s)s.name=name});
+  const deleteStage=id=>update(c=>{c.stages=c.stages.filter(x=>x.id!==id);(c.sections[id]||[]).forEach(sec=>delete c.books[sec.id]);delete c.sections[id]});
+  const addSection=(stageId,name)=>update(c=>{if(!c.sections[stageId])c.sections[stageId]=[];c.sections[stageId].push({id:crypto.randomUUID(),name})});
+  const renameSection=(stageId,id,name)=>update(c=>{const x=(c.sections[stageId]||[]).find(x=>x.id===id);if(x)x.name=name});
+  const deleteSection=(stageId,id)=>update(c=>{c.sections[stageId]=(c.sections[stageId]||[]).filter(x=>x.id!==id);delete c.books[id]});
+  const addBook=(secId,name)=>update(c=>{if(!c.books[secId])c.books[secId]=[];c.books[secId].push({id:crypto.randomUUID(),name,lessons:[]})});
+  const renameBook=(secId,id,name)=>update(c=>{const b=(c.books[secId]||[]).find(x=>x.id===id);if(b)b.name=name});
+  const deleteBook=(secId,id)=>update(c=>{c.books[secId]=(c.books[secId]||[]).filter(x=>x.id!==id)});
+  const addLesson=(secId,bookId,name,audioUrl)=>update(c=>{const b=(c.books[secId]||[]).find(x=>x.id===bookId);if(b)b.lessons=[...(b.lessons||[]),{id:crypto.randomUUID(),name,audioUrl:audioUrl||""}]});
+  const renameLesson=(secId,bookId,id,name)=>update(c=>{const b=(c.books[secId]||[]).find(x=>x.id===bookId),l=b?.lessons.find(x=>x.id===id);if(l)l.name=name});
+  const setLessonAudio=(secId,bookId,id,audioUrl)=>update(c=>{const b=(c.books[secId]||[]).find(x=>x.id===bookId),l=b?.lessons.find(x=>x.id===id);if(l)l.audioUrl=audioUrl});
+  const deleteLesson=(secId,bookId,id)=>update(c=>{const b=(c.books[secId]||[]).find(x=>x.id===bookId);if(b)b.lessons=b.lessons.filter(x=>x.id!==id)});
+  const stages=[...curriculum.stages].sort((a,b)=>a.order-b.order);
+  return <div className="man-body"><p className="man-section-label">إدارة المحتوى</p>{stages.length===0&&<EmptyState text="ابدأ بإضافة أول مرحلة."/>}
+    {stages.map((stage,i)=>{const isOpen=expandedStage===stage.id,sections=curriculum.sections[stage.id]||[];return <div key={stage.id} className="man-card man-accordion">
+      <div className="man-row" onClick={()=>setExpandedStage(isOpen?null:stage.id)}><div className="man-badge-num man-badge-sm">{i+1}</div><div className="man-row-body"><EditableTitle className="man-row-title" value={stage.name} onSave={v=>renameStage(stage.id,v)}/><div className="man-row-meta">{sections.length} قسم</div></div><ConfirmDelete onConfirm={()=>deleteStage(stage.id)}/><ChevronDown size={18} className={`man-chev ${isOpen?"man-chev-open":""}`}/></div>
+      {isOpen&&<div className="man-nested">{sections.map(sec=>{const secOpen=expandedSection===sec.id,books=curriculum.books[sec.id]||[];return <div key={sec.id} className="man-card man-accordion man-nested-card">
+        <div className="man-row" onClick={()=>setExpandedSection(secOpen?null:sec.id)}><FolderOpen size={16} className="man-row-icon"/><div className="man-row-body"><EditableTitle className="man-row-title" value={sec.name} onSave={v=>renameSection(stage.id,sec.id,v)}/><div className="man-row-meta">{books.length} كتاب</div></div><ConfirmDelete onConfirm={()=>deleteSection(stage.id,sec.id)}/><ChevronDown size={16} className={`man-chev ${secOpen?"man-chev-open":""}`}/></div>
+        {secOpen&&<div className="man-nested">{books.map(b=>{const bookOpen=expandedBook===b.id;return <div key={b.id} className="man-card man-accordion man-nested-card">
+          <div className="man-row" onClick={()=>setExpandedBook(bookOpen?null:b.id)}><BookOpen size={16} className="man-row-icon"/><div className="man-row-body"><EditableTitle className="man-row-title" value={b.name} onSave={v=>renameBook(sec.id,b.id,v)}/><div className="man-row-meta">{(b.lessons||[]).length} درس</div></div><ConfirmDelete onConfirm={()=>deleteBook(sec.id,b.id)}/><ChevronDown size={16} className={`man-chev ${bookOpen?"man-chev-open":""}`}/></div>
+          {bookOpen&&<div className="man-nested">{(b.lessons||[]).map(l=><div key={l.id} className="man-lesson-admin-row"><Music size={14} className="man-row-icon"/><div style={{flex:1}}><EditableTitle className="man-row-title" value={l.name} onSave={v=>renameLesson(sec.id,b.id,l.id,v)}/><input className="man-input man-input-sm" style={{marginTop:6}} placeholder="رابط الدرس الصوتي (اختياري)" value={l.audioUrl||""} onChange={e=>setLessonAudio(sec.id,b.id,l.id,e.target.value.trim())}/></div><ConfirmDelete onConfirm={()=>deleteLesson(sec.id,b.id,l.id)}/></div>)}<InlineAdd placeholder="إضافة درس" extra="رابط صوتي (اختياري)" onAdd={(n,a)=>addLesson(sec.id,b.id,n,a)}/></div>}
+        </div>})}<InlineAdd placeholder="إضافة كتاب" onAdd={n=>addBook(sec.id,n)}/></div>}
+      </div>})}<InlineAdd placeholder="إضافة قسم" onAdd={n=>addSection(stage.id,n)}/></div>}</div>})}
+    <InlineAdd placeholder="إضافة مرحلة جديدة" onAdd={n=>addStage(n)}/>
+  </div>
+}
+
+function AdminStudents({curriculum,users,updateUser,deleteUser}) {
+  const [expanded,setExpanded]=useState(null),stages=[...curriculum.stages].sort((a,b)=>a.order-b.order);
+  return <div className="man-body"><p className="man-section-label">إدارة الطلاب</p>
+    {users.length===0&&<EmptyState text="لم يسجّل أي طالب حسابًا بعد."/>}
+    {users.map(u=>{const isOpen=expanded===u.id,unlockedCount=(u.unlockedStageIds||[]).length;return <div key={u.id} className="man-card man-accordion">
+      <div className="man-row" onClick={()=>setExpanded(isOpen?null:u.id)}><GraduationCap size={18} className="man-row-icon"/><div className="man-row-body"><div className="man-row-title">{u.username||u.name||"طالب"}</div><div className="man-row-meta">{u.status==="approved"?"مقبول":"بانتظار الموافقة"} — {unlockedCount} من {stages.length} مرحلة مفتوحة</div></div><ConfirmDelete onConfirm={()=>deleteUser(u.id)} label="حذف الطالب"/><ChevronDown size={18} className={`man-chev ${isOpen?"man-chev-open":""}`}/></div>
+      {isOpen&&<div className="man-nested">
+        <div className="man-hint" style={{textAlign:"right",margin:"0 0 8px"}}>الحالة: <b>{u.status==="approved"?"مقبول":"معلّق"}</b></div>
+        {u.status!=="approved"&&<button className="man-btn man-btn-primary man-btn-sm" onClick={()=>updateUser(u.id,{status:"approved"})}>الموافقة على الطالب</button>}
+        {u.status==="approved"&&<button className="man-btn man-btn-ghost man-btn-sm" onClick={()=>updateUser(u.id,{status:"pending"})}>إيقاف الموافقة</button>}
+        {stages.map((s,i)=>{const checked=(u.unlockedStageIds||[]).includes(s.id);return <div key={s.id} className="man-toggle-row"><div className="man-badge-num man-badge-sm">{i+1}</div><span className="man-row-title" style={{flex:1}}>{s.name}</span><Switch checked={checked} onChange={v=>{const arr=new Set(u.unlockedStageIds||[]);v?arr.add(s.id):arr.delete(s.id);updateUser(u.id,{unlockedStageIds:[...arr]})}}/></div>})}
+      </div>}
+    </div>})}
+  </div>
+}
+
+function AdminApp({curriculum,setCurriculum,users,updateUser,deleteUser}) {
+  const [tab,setTab]=useState("content");
+  return <><div className="man-tabs man-tabs-admin">
+    <button className={`man-tab ${tab==="content"?"man-tab-active":""}`} onClick={()=>setTab("content")}><Layers size={15}/>المحتوى</button>
+    <button className={`man-tab ${tab==="students"?"man-tab-active":""}`} onClick={()=>setTab("students")}><UsersIcon size={15}/>الطلاب {users.length>0&&<span className="man-count">{users.length}</span>}</button>
+  </div>
+  {tab==="content"?<AdminContent curriculum={curriculum} setCurriculum={setCurriculum}/>:<AdminStudents curriculum={curriculum} users={users} updateUser={updateUser} deleteUser={deleteUser}/>}
+  </>
+}
+
+function App(){
+  const [session,setSession]=useState(null),[profile,setProfile]=useState(null),[authError,setAuthError]=useState(""),[authBusy,setAuthBusy]=useState(false),[ready,setReady]=useState(false);
+  const [curriculum,setCurriculumState]=useState(emptyCurriculum),[users,setUsers]=useState([]);
+
+  // 1) تسجيل الدخول الحقيقي عبر Firebase وعدم تخزين كلمة المرور في localStorage
+  useEffect(()=>{
+    const unsub=auth.onAuthStateChanged(async user=>{
+      if(!user){setSession(null);setProfile(null);setReady(true);return}
+      try{
+        const snap=await db.collection("users").doc(user.uid).get();
+        if(!snap.exists){await auth.signOut();setAuthError("لم يتم إنشاء ملف الحساب في قاعدة البيانات.");return}
+        const p={id:user.uid,...snap.data()};setProfile(p);setSession({uid:user.uid,role:p.role||"student",username:p.username||""});
+      }catch(e){setAuthError("تعذر تحميل بيانات الحساب: "+e.message)}
+      finally{setReady(true)}
+    });
+    return ()=>unsub();
+  },[]);
+
+  // 2) المحتوى يتحدث لحظيًا عند إضافة/تعديل المشرف
+  useEffect(()=>{
+    const unsub=db.collection("appData").doc("curriculum").onSnapshot(snap=>{
+      setCurriculumState(snap.exists?{...emptyCurriculum,...snap.data()}:emptyCurriculum)
+    },err=>setAuthError("خطأ في تحميل المحتوى: "+err.message));
+    return ()=>unsub();
+  },[]);
+
+  // 3) قائمة الطلاب تصل للمشرف لحظيًا، مع استثناء حساب المشرف
+  useEffect(()=>{
+    if(!session||session.role!=="admin"){setUsers([]);return}
+    const unsub=db.collection("users").where("role","==","student").onSnapshot(snap=>{
+      const arr=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.createdAt?.seconds||0)-(b.createdAt?.seconds||0));
+      setUsers(arr);
+    },err=>setAuthError("تعذر تحميل الطلاب: "+err.message));
+    return ()=>unsub();
+  },[session]);
+
+  const setCurriculum=useCallback(async next=>{
+    setCurriculumState(next);
+    try{await db.collection("appData").doc("curriculum").set(next,{merge:false})}
+    catch(e){setAuthError("تعذر حفظ المحتوى: "+e.message)}
+  },[]);
+
+  const updateUser=useCallback(async(id,patch)=>{
+    try{await db.collection("users").doc(id).update(patch)}catch(e){setAuthError("تعذر تحديث الطالب: "+e.message)}
+  },[]);
+  const deleteUser=useCallback(async(id)=>{
+    // حذف ملف Firestore فقط. حذف حساب Authentication نهائيًا يحتاج Admin SDK/Cloud Function.
+    try{await db.collection("users").doc(id).delete()}catch(e){setAuthError("تعذر حذف الطالب: "+e.message)}
+  },[]);
+
+  const handleLogin=async(username,password)=>{
+    setAuthError("");
+    if(!username||!password){setAuthError("الرجاء إدخال اسم المستخدم وكلمة المرور.");return}
+    setAuthBusy(true);
+    try{
+      const email=username.toLowerCase()+"@students.ahmadia.app";
+      await auth.signInWithEmailAndPassword(email,password);
+    }catch(e){
+      if(e.code==="auth/invalid-credential"||e.code==="auth/user-not-found"||e.code==="auth/wrong-password")setAuthError("بيانات الدخول غير صحيحة.");
+      else setAuthError("تعذر تسجيل الدخول: "+e.message);
+    }finally{setAuthBusy(false)}
+  };
+
+  const handleRegister=async(username,password,confirm)=>{
+    setAuthError("");
+    if(!username||username.length<3){setAuthError("اسم المستخدم يجب أن يكون 3 أحرف على الأقل.");return}
+    if(!/^[a-zA-Z0-9_.-]+$/.test(username)){setAuthError("اسم المستخدم يجب أن يكون أحرفًا إنجليزية وأرقامًا فقط.");return}
+    if(username.toLowerCase()==="admin"){setAuthError("هذا الاسم محجوز.");return}
+    if(!password||password.length<6){setAuthError("كلمة المرور يجب أن تكون 6 أحرف على الأقل.");return}
+    if(password!==confirm){setAuthError("كلمتا المرور غير متطابقتين.");return}
+    setAuthBusy(true);
+    const email=username.toLowerCase()+"@students.ahmadia.app";
+    try{
+      const cred=await auth.createUserWithEmailAndPassword(email,password);
+      await db.collection("users").doc(cred.user.uid).set({
+        username:username.toLowerCase(),role:"student",status:"pending",unlockedStageIds:[],
+        createdAt:firebase.firestore.FieldValue.serverTimestamp()
+      });
+      setProfile({id:cred.user.uid,username:username.toLowerCase(),role:"student",status:"pending",unlockedStageIds:[]});
+      setSession({uid:cred.user.uid,role:"student",username:username.toLowerCase()});
+      setAuthError("تم إنشاء الحساب. بانتظار موافقة المشرف.");
+    }catch(e){
+      if(e.code==="auth/email-already-in-use")setAuthError("اسم المستخدم مستخدم بالفعل.");
+      else if(e.code==="auth/weak-password")setAuthError("كلمة المرور ضعيفة.");
+      else setAuthError("تعذر إنشاء الحساب: "+e.message);
+    }finally{setAuthBusy(false)}
+  };
+
+  const handleLogout=()=>auth.signOut();
+
+  if(!ready)return <div className="man-shell"><div className="man-empty" style={{paddingTop:80}}><Loader2 size={26} className="man-spin"/><p>جارٍ التحميل...</p></div></div>;
+  if(!session)return <div className="man-shell"><AuthScreen onLogin={handleLogin} onRegister={handleRegister} error={authError} busy={authBusy}/></div>;
+
+  // حساب الطالب المعلّق لا يرى المحتوى ولا المراحل المفتوحة
+  const isAdmin=session.role==="admin";
+  const pending=!isAdmin&&profile?.status!=="approved";
+
+  return <div className="man-shell" dir="rtl" lang="ar">
+    <div className="man-header">
+      <div className="man-header-title"><BookOpen size={20}/> المدرسة الأحمدية</div>
+      <div className="man-header-user">
+        <span className="man-role-badge">{isAdmin?<ShieldCheck size={13}/>:<User size={13}/>} {isAdmin?"مشرف":session.username}</span>
+        <button className="man-logout-btn" onClick={handleLogout} title="تسجيل الخروج"><LogOut size={17}/></button>
+      </div>
+    </div>
+    {isAdmin?<AdminApp curriculum={curriculum} setCurriculum={setCurriculum} users={users} updateUser={updateUser} deleteUser={deleteUser}/>:pending?
+      <div className="man-body"><div className="man-empty"><Lock size={28}/><p>حسابك بانتظار موافقة المشرف.</p><p className="man-hint">بعد الموافقة وتحديد المراحل المسموح لك بها ستظهر لك تلقائيًا.</p></div></div>
+      :<StudentApp curriculum={curriculum} profile={profile}/>}
+  </div>
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+
+<style>
+.man-shell{--ink:#123832;--ink-2:#0c2b27;--gold:#a9772f;--gold-light:#d9b968;--paper:#f1eee3;--paper-2:#fdfcf7;--locked:#8a3324;--success:#2f6b4f;--line:#ddd5c0;--text:#23302c;--text-soft:#6b6355;max-width:430px;margin:0 auto;min-height:100vh;background:var(--paper);font-family:'Tajawal',sans-serif;color:var(--text);box-shadow:0 0 40px rgba(0,0,0,.08);display:flex;flex-direction:column}
+.man-shell *{box-sizing:border-box}.man-header{background:linear-gradient(160deg,var(--ink),var(--ink-2));color:#f4efe2;padding:16px 18px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:5}.man-header-title{font-family:'Amiri',serif;font-size:20px;color:var(--gold-light);display:flex;align-items:center;gap:8px}.man-header-user{display:flex;align-items:center;gap:10px;font-size:13px}.man-role-badge{background:rgba(217,185,104,.18);border:1px solid var(--gold-light);color:var(--gold-light);border-radius:20px;padding:3px 10px;font-size:11px;display:flex;align-items:center;gap:4px}.man-logout-btn{background:transparent;border:none;color:#f4efe2;cursor:pointer;display:flex;align-items:center;padding:6px;border-radius:8px}.man-logout-btn:hover{background:rgba(255,255,255,.08)}.man-body{padding:16px;flex:1}.man-auth{padding:28px 22px}.man-auth-hero{text-align:center;margin-bottom:26px}.man-logo{width:56px;height:56px;border-radius:16px;background:var(--ink);color:var(--gold-light);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;border:2px solid var(--gold)}.man-app-title{font-family:'Amiri',serif;font-size:30px;color:var(--ink);margin:0}.man-app-sub{color:var(--text-soft);font-size:13px;margin-top:6px}.man-tabs{display:flex;gap:8px;padding:0 22px}.man-tabs-admin{padding:14px 16px 0}.man-tab{flex:1;padding:10px;text-align:center;background:transparent;border:none;border-bottom:2px solid var(--line);color:var(--text-soft);font-family:'Tajawal',sans-serif;font-weight:500;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;gap:6px}.man-tab-active{color:var(--ink);border-bottom:2px solid var(--gold);font-weight:700}.man-auth-form{padding:22px}.man-label{display:block;font-size:12px;color:var(--text-soft);margin:12px 0 5px}.man-input{width:100%;padding:11px 12px;border-radius:10px;border:1px solid var(--line);background:var(--paper-2);font-family:'Tajawal',sans-serif;font-size:14px;color:var(--text)}.man-input:focus{outline:none;border-color:var(--gold)}.man-input-sm{padding:6px 10px;font-size:13px;border-radius:8px}.man-error{color:var(--locked);font-size:12px;margin-top:10px;background:rgba(138,51,36,.08);padding:8px 10px;border-radius:8px}.man-hint{color:var(--text-soft);font-size:11px;text-align:center;margin-top:14px;line-height:1.7}.man-btn{border:none;border-radius:10px;padding:11px 16px;cursor:pointer;font-family:'Tajawal',sans-serif;font-weight:700;font-size:14px;display:inline-flex;align-items:center;justify-content:center;gap:6px}.man-btn-primary{background:var(--ink);color:var(--gold-light)}.man-btn-primary:hover{background:var(--ink-2)}.man-btn-ghost{background:transparent;color:var(--text-soft);border:1px solid var(--line)}.man-btn-full{width:100%;margin-top:18px;padding:13px}.man-btn-sm{padding:7px 12px;font-size:12px}.man-spin{animation:man-spin .9s linear infinite}@keyframes man-spin{to{transform:rotate(360deg)}}.man-section-label{font-family:'Amiri',serif;font-size:17px;color:var(--ink);margin:4px 0 12px}.man-card{background:var(--paper-2);border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:10px}.man-stage-card{display:flex;align-items:center;gap:12px;cursor:pointer;border-right:4px solid var(--line)}.man-stage-unlocked{border-right-color:var(--success)}.man-stage-locked{opacity:.72;border-right-color:var(--locked)}.man-stage-info{flex:1}.man-stage-name{font-weight:700;font-size:15px}.man-stage-meta{font-size:12px;color:var(--text-soft);margin-top:2px}.man-lock-icon{color:var(--locked)}.man-lock-open{color:var(--success)}.man-badge-num{min-width:32px;height:32px;border-radius:50%;background:var(--paper);border:2px solid var(--gold);color:var(--ink);font-weight:700;font-family:'Amiri',serif;display:flex;align-items:center;justify-content:center;font-size:14px}.man-badge-sm{min-width:26px;height:26px;font-size:12px;border-width:1.5px}.man-row{display:flex;align-items:center;gap:10px;cursor:pointer}.man-row-icon{color:var(--gold);flex-shrink:0}.man-row-body{flex:1;min-width:0}.man-row-title{font-weight:600;font-size:14px}.man-row-meta{font-size:11.5px;color:var(--text-soft);margin-top:2px}.man-chev{color:var(--text-soft);flex-shrink:0;transition:transform .15s}.man-chev-open{transform:rotate(180deg)}.man-backbar{display:flex;align-items:center;gap:8px;background:transparent;border:none;color:var(--ink);font-family:'Amiri',serif;font-size:18px;padding:4px 0 14px;cursor:pointer;width:100%}.man-empty{text-align:center;padding:34px 10px;color:var(--text-soft)}.man-empty svg{color:var(--gold-light);margin-bottom:8px}.man-empty p{font-size:13px;margin:0}.man-toast{background:var(--ink);color:var(--gold-light);padding:10px 14px;border-radius:10px;font-size:12.5px;margin-bottom:12px;text-align:center}.man-audio{width:100%;margin-top:8px;height:34px}.man-accordion{padding:0;overflow:hidden}.man-accordion>.man-row{padding:12px}.man-nested{padding:4px 10px 10px;border-top:1px dashed var(--line)}.man-nested-card{margin:8px 0 0}.man-add-trigger{display:flex;align-items:center;gap:6px;background:transparent;border:1px dashed var(--gold);color:var(--ink);border-radius:10px;padding:9px 12px;font-size:13px;cursor:pointer;width:100%;justify-content:center;font-family:'Tajawal',sans-serif;margin-top:6px}.man-add-form{display:flex;flex-direction:column;gap:6px;margin-top:6px}.man-add-actions{display:flex;gap:6px}.man-icon-btn{background:transparent;border:none;color:var(--text-soft);cursor:pointer;padding:4px;border-radius:6px;display:flex;align-items:center}.man-icon-btn:hover{background:rgba(0,0,0,.06)}.man-icon-danger{color:var(--locked)}.man-confirm-row{display:flex;gap:2px}.man-edit-icon{color:var(--gold);cursor:pointer;opacity:.75}.man-edit-icon:hover{opacity:1}.man-lesson-admin-row{display:flex;align-items:flex-start;gap:8px;padding:8px 0;border-bottom:1px solid var(--line)}.man-lesson-admin-row:last-child{border-bottom:none}.man-toggle-row{display:flex;align-items:center;gap:10px;padding:8px 4px;border-bottom:1px solid var(--line)}.man-toggle-row:last-child{border-bottom:none}.man-switch{position:relative;display:inline-block;width:40px;height:22px}.man-switch input{opacity:0;width:0;height:0}.man-switch-track{position:absolute;inset:0;background:#d8d2c1;border-radius:20px;transition:.2s}.man-switch-thumb{position:absolute;top:2px;right:2px;width:18px;height:18px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 2px rgba(0,0,0,.3)}.man-switch input:checked+.man-switch-track{background:var(--success)}.man-switch input:checked+.man-switch-track .man-switch-thumb{transform:translateX(-18px)}.man-count{background:var(--gold);color:#fff;border-radius:12px;padding:1px 6px;font-size:10px}
+</style>
+</body>
+</html>
