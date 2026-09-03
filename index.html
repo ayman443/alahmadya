@@ -1,922 +1,979 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>تطبيق المدرسة الأحمدية </title>
-  
-  <!-- الخطوط الرسمية -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>المدرسة الأحمدية</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- React & ReactDOM CDN -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    
+    <!-- Babel standalone for JSX processing -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-  <!-- React & ReactDOM -->
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-  
-  <!-- Babel Compiles JSX in-browser -->
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        .man-shell {
+          --ink: #123832;
+          --ink-2: #0c2b27;
+          --gold: #a9772f;
+          --gold-light: #d9b968;
+          --paper: #f1eee3;
+          --paper-2: #fdfcf7;
+          --locked: #8a3324;
+          --success: #2f6b4f;
+          --line: #ddd5c0;
+          --text: #23302c;
+          --text-soft: #6b6355;
+          max-width: 430px;
+          margin: 0 auto;
+          min-height: 100vh;
+          background: var(--paper);
+          font-family: 'Tajawal', sans-serif;
+          color: var(--text);
+          box-shadow: 0 0 40px rgba(0,0,0,0.08);
+          display: flex;
+          flex-direction: column;
+        }
+        .man-shell * { box-sizing: border-box; }
 
-  <!-- Lucide Icons -->
-  <script src="https://unpkg.com/lucide@latest"></script>
+        .man-header {
+          background: linear-gradient(160deg, var(--ink) 0%, var(--ink-2) 100%);
+          color: #f4efe2;
+          padding: 16px 18px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          position: sticky;
+          top: 0;
+          z-index: 5;
+        }
+        .man-header-title { font-family: 'Amiri', serif; font-size: 17px; color: var(--gold-light); display:flex; align-items:center; gap:6px; line-height: 1.25; }
+        .man-header-user { display: flex; align-items: center; gap: 10px; font-size: 13px; }
+        .man-role-badge {
+          background: rgba(217,185,104,0.18);
+          border: 1px solid var(--gold-light);
+          color: var(--gold-light);
+          border-radius: 20px;
+          padding: 3px 10px;
+          font-size: 11px;
+          display: flex; align-items: center; gap: 4px;
+        }
+        .man-logout-btn {
+          background: transparent; border: none; color: #f4efe2; cursor: pointer;
+          display: flex; align-items: center; padding: 6px; border-radius: 8px;
+        }
+        .man-logout-btn:hover { background: rgba(255,255,255,0.08); }
+
+        .man-body { padding: 16px; flex: 1; }
+
+        .man-auth { padding: 28px 22px; }
+        .man-auth-hero { text-align: center; margin-bottom: 26px; }
+        .man-logo {
+          width: 56px; height: 56px; border-radius: 16px;
+          background: var(--ink); color: var(--gold-light);
+          display: flex; align-items: center; justify-content: center;
+          margin: 0 auto 14px; border: 2px solid var(--gold);
+        }
+        .man-app-title { font-family: 'Amiri', serif; font-size: 30px; color: var(--ink); margin: 0; }
+        .man-app-sub { color: var(--text-soft); font-size: 13px; margin-top: 6px; }
+
+        .man-tabs { display: flex; gap: 8px; padding: 0 22px; }
+        .man-tabs-admin { padding: 14px 16px 0; }
+        .man-tab {
+          flex: 1; padding: 10px; text-align: center; background: transparent;
+          border: none; border-bottom: 2px solid var(--line); color: var(--text-soft);
+          font-family: 'Tajawal', sans-serif; font-weight: 500; cursor: pointer; font-size: 14px;
+          display: flex; align-items: center; justify-content: center; gap: 6px;
+        }
+        .man-tab-active { color: var(--ink); border-bottom: 2px solid var(--gold); font-weight: 700; }
+
+        .man-auth-form { padding: 22px; }
+        .man-label { display: block; font-size: 12px; color: var(--text-soft); margin: 12px 0 5px; }
+        .man-input {
+          width: 100%; padding: 11px 12px; border-radius: 10px; border: 1px solid var(--line);
+          background: var(--paper-2); font-family: 'Tajawal', sans-serif; font-size: 14px; color: var(--text);
+        }
+        .man-input:focus { outline: none; border-color: var(--gold); }
+        .man-input-sm { padding: 6px 10px; font-size: 13px; border-radius: 8px; }
+
+        .man-error { color: var(--locked); font-size: 12px; margin-top: 10px; background: rgba(138,51,36,0.08); padding: 8px 10px; border-radius: 8px; }
+        .man-hint { color: var(--text-soft); font-size: 11px; text-align: center; margin-top: 14px; line-height: 1.7; }
+
+        .man-btn {
+          border: none; border-radius: 10px; padding: 11px 16px; cursor: pointer;
+          font-family: 'Tajawal', sans-serif; font-weight: 700; font-size: 14px;
+          display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+        }
+        .man-btn-primary { background: var(--ink); color: var(--gold-light); }
+        .man-btn-primary:hover { background: var(--ink-2); }
+        .man-btn-ghost { background: transparent; color: var(--text-soft); border: 1px solid var(--line); }
+        .man-btn-full { width: 100%; margin-top: 18px; padding: 13px; }
+        .man-btn-sm { padding: 7px 12px; font-size: 12px; }
+        .man-spin { animation: man-spin 0.9s linear infinite; }
+        @keyframes man-spin { to { transform: rotate(360deg); } }
+
+        .man-section-label { font-family: 'Amiri', serif; font-size: 17px; color: var(--ink); margin: 4px 0 12px; }
+
+        .man-card {
+          background: var(--paper-2); border: 1px solid var(--line); border-radius: 12px;
+          padding: 12px; margin-bottom: 10px;
+        }
+
+        .man-stage-card { display: flex; align-items: center; gap: 12px; cursor: pointer; border-right: 4px solid var(--line); }
+        .man-stage-unlocked { border-right-color: var(--success); }
+        .man-stage-locked { opacity: 0.72; border-right-color: var(--locked); }
+        .man-stage-info { flex: 1; }
+        .man-stage-name { font-weight: 700; font-size: 15px; }
+        .man-stage-meta { font-size: 12px; color: var(--text-soft); margin-top: 2px; }
+        .man-lock-icon { color: var(--locked); }
+        .man-lock-open { color: var(--success); }
+
+        .man-badge-num {
+          min-width: 32px; height: 32px; border-radius: 50%;
+          background: var(--paper); border: 2px solid var(--gold);
+          color: var(--ink); font-weight: 700; font-family: 'Amiri', serif;
+          display: flex; align-items: center; justify-content: center; font-size: 14px;
+        }
+        .man-badge-sm { min-width: 26px; height: 26px; font-size: 12px; border-width: 1.5px; }
+
+        .man-row { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+        .man-row-icon { color: var(--gold); flex-shrink: 0; }
+        .man-row-body { flex: 1; min-width: 0; }
+        .man-row-title { font-weight: 600; font-size: 14px; }
+        .man-row-meta { font-size: 11.5px; color: var(--text-soft); margin-top: 2px; }
+        .man-chev { color: var(--text-soft); flex-shrink: 0; transition: transform 0.15s ease; }
+        .man-chev-open { transform: rotate(180deg); }
+
+        .man-backbar {
+          display: flex; align-items: center; gap: 8px; background: transparent; border: none;
+          color: var(--ink); font-family: 'Amiri', serif; font-size: 18px; padding: 4px 0 14px;
+          cursor: pointer; width: 100%;
+        }
+
+        .man-empty { text-align: center; padding: 34px 10px; color: var(--text-soft); }
+        .man-empty svg { color: var(--gold-light); margin-bottom: 8px; }
+        .man-empty p { font-size: 13px; margin: 0; }
+
+        .man-toast {
+          background: var(--ink); color: var(--gold-light); padding: 10px 14px; border-radius: 10px;
+          font-size: 12.5px; margin-bottom: 12px; text-align: center;
+        }
+
+        .man-audio { width: 100%; margin-top: 8px; height: 34px; }
+
+        .man-accordion { padding: 0; overflow: hidden; }
+        .man-accordion > .man-row { padding: 12px; }
+        .man-nested { padding: 4px 10px 10px 10px; border-top: 1px dashed var(--line); }
+        .man-nested-card { margin: 8px 0 0; }
+
+        .man-add-trigger {
+          display: flex; align-items: center; gap: 6px; background: transparent;
+          border: 1px dashed var(--gold); color: var(--ink); border-radius: 10px;
+          padding: 9px 12px; font-size: 13px; cursor: pointer; width: 100%; justify-content: center;
+          font-family: 'Tajawal', sans-serif; margin-top: 6px;
+        }
+        .man-add-form { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
+        .man-add-actions { display: flex; gap: 6px; }
+
+        .man-icon-btn {
+          background: transparent; border: none; color: var(--text-soft); cursor: pointer;
+          padding: 4px; border-radius: 6px; display: flex; align-items: center;
+        }
+        .man-icon-btn:hover { background: rgba(0,0,0,0.06); }
+        .man-icon-danger { color: var(--locked); }
+        .man-confirm-row { display: flex; gap: 2px; }
+        .man-edit-icon { color: var(--gold); cursor: pointer; opacity: 0.75; }
+        .man-edit-icon:hover { opacity: 1; }
+
+        .man-lesson-admin-row { display: flex; align-items: flex-start; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+        .man-lesson-admin-row:last-child { border-bottom: none; }
+
+        .man-toggle-row { display: flex; align-items: center; gap: 10px; padding: 8px 4px; border-bottom: 1px solid var(--line); }
+        .man-toggle-row:last-child { border-bottom: none; }
+
+        .man-admin-row { cursor: default; border-right: 4px solid var(--gold); }
+
+        .man-switch { position: relative; display: inline-block; width: 40px; height: 22px; }
+        .man-switch input { opacity: 0; width: 0; height: 0; }
+        .man-switch-track {
+          position: absolute; inset: 0; background: #d8d2c1; border-radius: 20px; transition: 0.2s;
+        }
+        .man-switch-thumb {
+          position: absolute; top: 2px; right: 2px; width: 18px; height: 18px; background: white;
+          border-radius: 50%; transition: 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+        .man-switch input:checked + .man-switch-track { background: var(--success); }
+        .man-switch input:checked + .man-switch-track .man-switch-thumb { transform: translateX(-18px); }
+    </style>
 </head>
-<body style="margin: 0; background-color: #e5e2d8;">
+<body>
+    <div id="root"></div>
 
-  <div id="root"></div>
+    <script type="text/babel">
+        const { useState, useEffect, useCallback } = React;
 
-  <script type="text/babel">
-    const { useState, useEffect, useCallback } = React;
-
-    // --- Lucide Icons Wrapper Component ---
-    const Icon = ({ name, size = 18, className = "", style = {}, onClick }) => {
-      useEffect(() => {
-        if (window.lucide) {
-          window.lucide.createIcons();
-        }
-      });
-      return <i data-lucide={name} className={className} style={{ width: size, height: size, display: 'inline-block', verticalAlign: 'middle', ...style }} onClick={onClick}></i>;
-    };
-
-    const Lock = (props) => <Icon name="lock" {...props} />;
-    const Unlock = (props) => <Icon name="unlock" {...props} />;
-    const BookOpen = (props) => <Icon name="book-open" {...props} />;
-    const ChevronLeft = (props) => <Icon name="chevron-left" {...props} />;
-    const ChevronDown = (props) => <Icon name="chevron-down" {...props} />;
-    const ArrowRight = (props) => <Icon name="arrow-right" {...props} />;
-    const LogOut = (props) => <Icon name="log-out" {...props} />;
-    const Plus = (props) => <Icon name="plus" {...props} />;
-    const Trash2 = (props) => <Icon name="trash-2" {...props} />;
-    const Pencil = (props) => <Icon name="pencil" {...props} />;
-    const Check = (props) => <Icon name="check" {...props} />;
-    const X = (props) => <Icon name="x" {...props} />;
-    const ShieldCheck = (props) => <Icon name="shield-check" {...props} />;
-    const GraduationCap = (props) => <Icon name="graduation-cap" {...props} />;
-    const User = (props) => <Icon name="user" {...props} />;
-    const Loader2 = (props) => <Icon name="loader-2" {...props} />;
-    const Layers = (props) => <Icon name="layers" {...props} />;
-    const FolderOpen = (props) => <Icon name="folder-open" {...props} />;
-    const Music = (props) => <Icon name="music" {...props} />;
-    const UsersIcon = (props) => <Icon name="users" {...props} />;
-
-    /* ----------------------------- Config & Helpers ----------------------------- */
-
-    const ADMIN_USERNAME = "admin";
-    const ADMIN_PASSWORD = "admin123";
-
-    const uid = () => Math.random().toString(36).slice(2, 9) + Date.now().toString(36);
-    const emptyCurriculum = { stages: [], sections: {}, books: {} };
-
-    // دعم استرجاع وحفظ البيانات عبر localStorage المتصفح
-    async function storageGet(key, shared) {
-      try {
-        if (window.storage && window.storage.get) {
-          const res = await window.storage.get(key, shared);
-          return res ? res.value : null;
-        }
-        return localStorage.getItem(key);
-      } catch (e) {
-        return localStorage.getItem(key);
-      }
-    }
-
-    async function storageSet(key, value, shared) {
-      try {
-        if (window.storage && window.storage.set) {
-          await window.storage.set(key, value, shared);
-          return true;
-        }
-        localStorage.setItem(key, value);
-        return true;
-      } catch (e) {
-        localStorage.setItem(key, value);
-        return false;
-      }
-    }
-
-    /* ---------------------------- Small UI components ---------------------------- */
-
-    function Switch({ checked, onChange }) {
-      return (
-        <label className="man-switch">
-          <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} />
-          <span className="man-switch-track"><span className="man-switch-thumb" /></span>
-        </label>
-      );
-    }
-
-    function ConfirmDelete({ onConfirm, label }) {
-      const [pending, setPending] = useState(false);
-      if (!pending) {
-        return (
-          <button className="man-icon-btn man-icon-danger" title={label || "حذف"} onClick={() => setPending(true)}>
-            <Trash2 size={16} />
-          </button>
+        // SVG Icon Helpers
+        const Lock = ({ size = 18, className = "" }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
         );
-      }
-      return (
-        <span className="man-confirm-row">
-          <button className="man-icon-btn man-icon-danger" onClick={() => { setPending(false); onConfirm(); }}>
-            <Check size={16} />
-          </button>
-          <button className="man-icon-btn" onClick={() => setPending(false)}>
-            <X size={16} />
-          </button>
-        </span>
-      );
-    }
-
-    function InlineAdd({ placeholder, onAdd, extra }) {
-      const [open, setOpen] = useState(false);
-      const [val, setVal] = useState("");
-      const [extraVal, setExtraVal] = useState("");
-      const submit = () => {
-        if (!val.trim()) return;
-        onAdd(val.trim(), extraVal.trim());
-        setVal(""); setExtraVal(""); setOpen(false);
-      };
-      if (!open) {
-        return (
-          <button className="man-add-trigger" onClick={() => setOpen(true)}>
-            <Plus size={15} /> {placeholder}
-          </button>
+        const Unlock = ({ size = 18, className = "" }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 9.9-1"></path></svg>
         );
-      }
-      return (
-        <div className="man-add-form">
-          <input
-            className="man-input"
-            autoFocus
-            placeholder={placeholder}
-            value={val}
-            onChange={(e) => setVal(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && !extra && submit()}
-          />
-          {extra && (
-            <input
-              className="man-input"
-              placeholder={extra}
-              value={extraVal}
-              onChange={(e) => setExtraVal(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && submit()}
-            />
-          )}
-          <div className="man-add-actions">
-            <button className="man-btn man-btn-primary man-btn-sm" onClick={submit}>إضافة</button>
-            <button className="man-btn man-btn-ghost man-btn-sm" onClick={() => { setOpen(false); setVal(""); setExtraVal(""); }}>إلغاء</button>
-          </div>
-        </div>
-      );
-    }
-
-    function EditableTitle({ value, onSave, className }) {
-      const [editing, setEditing] = useState(false);
-      const [val, setVal] = useState(value);
-      if (!editing) {
-        return (
-          <span className={className} style={{ display: "flex", alignItems: "center", gap: 6 }}>
-            {value}
-            <Pencil size={12} className="man-edit-icon" onClick={(e) => { e.stopPropagation(); setVal(value); setEditing(true); }} />
-          </span>
+        const BookOpen = ({ size = 18, className = "" }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
         );
-      }
-      return (
-        <span style={{ display: "flex", gap: 6, alignItems: "center" }} onClick={(e) => e.stopPropagation()}>
-          <input className="man-input man-input-sm" value={val} onChange={(e) => setVal(e.target.value)} autoFocus />
-          <button className="man-icon-btn" onClick={() => { if (val.trim()) { onSave(val.trim()); } setEditing(false); }}><Check size={14} /></button>
-          <button className="man-icon-btn" onClick={() => setEditing(false)}><X size={14} /></button>
-        </span>
-      );
-    }
+        const ChevronLeft = ({ size = 18, className = "" }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="15 18 9 12 15 6"></polyline></svg>
+        );
+        const ChevronDown = ({ size = 18, className = "" }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="6 9 12 15 18 9"></polyline></svg>
+        );
+        const ArrowRight = ({ size = 18, className = "" }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+        );
+        const LogOut = ({ size = 18, className = "" }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+        );
+        const Plus = ({ size = 18, className = "" }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        );
+        const Trash2 = ({ size = 18, className = "" }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+        );
+        const Pencil = ({ size = 18, className = "" }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
+        );
+        const Check = ({ size = 18, className = "" }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="20 6 9 17 4 12"></polyline></svg>
+        );
+        const X = ({ size = 18, className = "" }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        );
+        const ShieldCheck = ({ size = 18, className = "" }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 11 14 15 10"></polyline></svg>
+        );
+        const GraduationCap = ({ size = 18, className = "" }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg>
+        );
+        const User = ({ size = 18, className = "" }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+        );
+        const Loader2 = ({ size = 18, className = "" }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="12" y1="2" x2="12" y2="6"></line><line x1="12" y1="18" x2="12" y2="22"></line><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line><line x1="2" y1="12" x2="6" y2="12"></line><line x1="18" y1="12" x2="22" y2="12"></line><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line></svg>
+        );
+        const Layers = ({ size = 18, className = "" }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+        );
+        const FolderOpen = ({ size = 18, className = "" }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path><polyline points="8 21 12 17 16 21"></polyline></svg>
+        );
+        const Music = ({ size = 18, className = "" }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
+        );
+        const UsersIcon = ({ size = 18, className = "" }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M17 21v-2a4 4 0 0 0-3-3.87"></path><path d="M9 21v-2a4 4 0 0 1 3-3.87"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+        );
+        const RotateCw = ({ size = 18, className = "" }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
+        );
 
-    /* ------------------------------ Auth screen ------------------------------ */
+        const ADMIN_USERNAME = "admin";
+        const ADMIN_PASSWORD = "admin123";
 
-    function AuthScreen({ onLogin, onRegister, error, busy }) {
-      const [mode, setMode] = useState("login");
-      const [username, setUsername] = useState("");
-      const [password, setPassword] = useState("");
-      const [confirm, setConfirm] = useState("");
+        const uid = () => Math.random().toString(36).slice(2, 9) + Date.now().toString(36);
+        const emptyCurriculum = { stages: [], sections: {}, books: {} };
 
-      const submit = () => {
-        if (mode === "login") onLogin(username.trim(), password);
-        else onRegister(username.trim(), password, confirm);
-      };
+        // Fallback for window.storage if not present (using localStorage)
+        const storage = window.storage || {
+          get: async (key) => ({ value: localStorage.getItem(key) }),
+          set: async (key, value) => { localStorage.setItem(key, value); }
+        };
 
-      return (
-        <div className="man-auth">
-          <div className="man-auth-hero">
-            <div className="man-logo"><BookOpen size={30} /></div>
-            <h1 className="man-app-title">المدرسة الأحمدية</h1>
-            <p className="man-app-sub">مراحل علمية مرتّبة، تُفتح لك خطوة بخطوة</p>
-          </div>
-
-          <div className="man-tabs">
-            <button className={`man-tab ${mode === "login" ? "man-tab-active" : ""}`} onClick={() => setMode("login")}>تسجيل الدخول</button>
-            <button className={`man-tab ${mode === "register" ? "man-tab-active" : ""}`} onClick={() => setMode("register")}>إنشاء حساب</button>
-          </div>
-
-          <div className="man-auth-form">
-            <label className="man-label">اسم المستخدم</label>
-            <input className="man-input" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="مثال: ahmad_92" />
-
-            <label className="man-label">كلمة المرور</label>
-            <input className="man-input" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" />
-
-            {mode === "register" && (
-              <>
-                <label className="man-label">تأكيد كلمة المرور</label>
-                <input className="man-input" type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} placeholder="••••••••" />
-              </>
-            )}
-
-            {error && <div className="man-error">{error}</div>}
-
-            <button className="man-btn man-btn-primary man-btn-full" onClick={submit} disabled={busy}>
-              {busy ? <Loader2 size={16} className="man-spin" /> : (mode === "login" ? "دخول" : "إنشاء الحساب")}
-            </button>
-
-            {mode === "login" && (
-              <p className="man-hint">حساب المشرف الافتراضي: <b>admin</b> / <b>admin123</b> (يُنصح بتغييره لاحقًا)</p>
-            )}
-          </div>
-        </div>
-      );
-    }
-
-    /* ----------------------------- Student views ----------------------------- */
-
-    function StudentApp({ curriculum, unlockedStageIds }) {
-      const [nav, setNav] = useState({ screen: "stages", stageId: null, sectionId: null, bookId: null });
-      const [toast, setToast] = useState("");
-
-      useEffect(() => {
-        if (!toast) return;
-        const t = setTimeout(() => setToast(""), 2200);
-        return () => clearTimeout(t);
-      }, [toast]);
-
-      const stages = [...curriculum.stages].sort((a, b) => a.order - b.order);
-      const stage = curriculum.stages.find((s) => s.id === nav.stageId);
-      const sections = nav.stageId ? (curriculum.sections[nav.stageId] || []) : [];
-      const section = sections.find((s) => s.id === nav.sectionId);
-      const books = nav.sectionId ? (curriculum.books[nav.sectionId] || []) : [];
-      const book = books.find((b) => b.id === nav.bookId);
-
-      const goStages = () => setNav({ screen: "stages", stageId: null, sectionId: null, bookId: null });
-      const goSections = (stageId) => {
-        if (!unlockedStageIds.includes(stageId)) {
-          setToast("هذه المرحلة مغلقة حاليًا. تواصل مع المشرف لفتحها لك.");
-          return;
+        async function storageGet(key, shared) {
+          try {
+            const res = await storage.get(key, shared);
+            return res ? res.value : null;
+          } catch (e) {
+            return null;
+          }
         }
-        setNav({ screen: "sections", stageId, sectionId: null, bookId: null });
-      };
-      const goBooks = (sectionId) => setNav((n) => ({ ...n, screen: "books", sectionId, bookId: null }));
-      const goLessons = (bookId) => setNav((n) => ({ ...n, screen: "lessons", bookId }));
+        async function storageSet(key, value, shared) {
+          try {
+            await storage.set(key, value, shared);
+            return true;
+          } catch (e) {
+            return false;
+          }
+        }
 
-      return (
-        <div className="man-body">
-          {toast && <div className="man-toast">{toast}</div>}
+        /* ---------------------------- Small UI atoms ---------------------------- */
 
-          {nav.screen === "stages" && (
-            <>
-              <p className="man-section-label">المراحل الدراسية</p>
-              {stages.length === 0 && <EmptyState text="لم يقم المشرف بإضافة أي مرحلة بعد." />}
-              {stages.map((s, i) => {
-                const unlocked = unlockedStageIds.includes(s.id);
-                const secCount = (curriculum.sections[s.id] || []).length;
-                return (
-                  <div key={s.id} className={`man-card man-stage-card ${unlocked ? "man-stage-unlocked" : "man-stage-locked"}`} onClick={() => goSections(s.id)}>
-                    <div className="man-badge-num">{i + 1}</div>
-                    <div className="man-stage-info">
-                      <div className="man-stage-name">{s.name}</div>
-                      <div className="man-stage-meta">{secCount} قسم</div>
+        function Switch({ checked, onChange }) {
+          return (
+            <label className="man-switch">
+              <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} />
+              <span className="man-switch-track"><span className="man-switch-thumb" /></span>
+            </label>
+          );
+        }
+
+        function ConfirmDelete({ onConfirm, label }) {
+          const [pending, setPending] = useState(false);
+          if (!pending) {
+            return (
+              <button className="man-icon-btn man-icon-danger" title={label || "حذف"} onClick={() => setPending(true)}>
+                <Trash2 size={16} />
+              </button>
+            );
+          }
+          return (
+            <span className="man-confirm-row">
+              <button className="man-icon-btn man-icon-danger" onClick={() => { setPending(false); onConfirm(); }}>
+                <Check size={16} />
+              </button>
+              <button className="man-icon-btn" onClick={() => setPending(false)}>
+                <X size={16} />
+              </button>
+            </span>
+          );
+        }
+
+        function InlineAdd({ placeholder, onAdd, extra }) {
+          const [open, setOpen] = useState(false);
+          const [val, setVal] = useState("");
+          const [extraVal, setExtraVal] = useState("");
+          const submit = () => {
+            if (!val.trim()) return;
+            onAdd(val.trim(), extraVal.trim());
+            setVal(""); setExtraVal(""); setOpen(false);
+          };
+          if (!open) {
+            return (
+              <button className="man-add-trigger" onClick={() => setOpen(true)}>
+                <Plus size={15} /> {placeholder}
+              </button>
+            );
+          }
+          return (
+            <div className="man-add-form">
+              <input
+                className="man-input"
+                autoFocus
+                placeholder={placeholder}
+                value={val}
+                onChange={(e) => setVal(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && !extra && submit()}
+              />
+              {extra && (
+                <input
+                  className="man-input"
+                  placeholder={extra}
+                  value={extraVal}
+                  onChange={(e) => setExtraVal(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && submit()}
+                />
+              )}
+              <div className="man-add-actions">
+                <button className="man-btn man-btn-primary man-btn-sm" onClick={submit}>إضافة</button>
+                <button className="man-btn man-btn-ghost man-btn-sm" onClick={() => { setOpen(false); setVal(""); setExtraVal(""); }}>إلغاء</button>
+              </div>
+            </div>
+          );
+        }
+
+        function EditableTitle({ value, onSave, className }) {
+          const [editing, setEditing] = useState(false);
+          const [val, setVal] = useState(value);
+          if (!editing) {
+            return (
+              <span className={className} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                {value}
+                <Pencil size={12} className="man-edit-icon" onClick={(e) => { e.stopPropagation(); setVal(value); setEditing(true); }} />
+              </span>
+            );
+          }
+          return (
+            <span style={{ display: "flex", gap: 6, alignItems: "center" }} onClick={(e) => e.stopPropagation()}>
+              <input className="man-input man-input-sm" value={val} onChange={(e) => setVal(e.target.value)} autoFocus />
+              <button className="man-icon-btn" onClick={() => { if (val.trim()) { onSave(val.trim()); } setEditing(false); }}><Check size={14} /></button>
+              <button className="man-icon-btn" onClick={() => setEditing(false)}><X size={14} /></button>
+            </span>
+          );
+        }
+
+        /* ------------------------------ Auth screen ------------------------------ */
+
+        function AuthScreen({ onLogin, onRegister, error, busy }) {
+          const [mode, setMode] = useState("login");
+          const [username, setUsername] = useState("");
+          const [password, setPassword] = useState("");
+          const [confirm, setConfirm] = useState("");
+
+          const submit = () => {
+            if (mode === "login") onLogin(username.trim(), password);
+            else onRegister(username.trim(), password, confirm);
+          };
+
+          return (
+            <div className="man-auth">
+              <div className="man-auth-hero">
+                <div className="man-logo"><BookOpen size={30} /></div>
+                <h1 className="man-app-title">المدرسة الأحمدية</h1>
+                <p className="man-app-sub">مراحل علمية مرتّبة، تُفتح لك خطوة بخطوة</p>
+              </div>
+
+              <div className="man-tabs">
+                <button className={`man-tab ${mode === "login" ? "man-tab-active" : ""}`} onClick={() => setMode("login")}>تسجيل الدخول</button>
+                <button className={`man-tab ${mode === "register" ? "man-tab-active" : ""}`} onClick={() => setMode("register")}>إنشاء حساب</button>
+              </div>
+
+              <div className="man-auth-form">
+                <label className="man-label">اسم المستخدم</label>
+                <input className="man-input" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="مثال: ahmad_92" />
+
+                <label className="man-label">كلمة المرور</label>
+                <input className="man-input" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" />
+
+                {mode === "register" && (
+                  <>
+                    <label className="man-label">تأكيد كلمة المرور</label>
+                    <input className="man-input" type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} placeholder="••••••••" />
+                  </>
+                )}
+
+                {error && <div className="man-error">{error}</div>}
+
+                <button className="man-btn man-btn-primary man-btn-full" onClick={submit} disabled={busy}>
+                  {busy ? <Loader2 size={16} className="man-spin" /> : (mode === "login" ? "دخول" : "إنشاء الحساب")}
+                </button>
+
+                {mode === "login" && (
+                  <p className="man-hint">حساب المشرف الافتراضي: <b>admin</b> / <b>admin123</b> (يُنصح بتغييره لاحقًا)</p>
+                )}
+              </div>
+            </div>
+          );
+        }
+
+        /* ----------------------------- Student views ----------------------------- */
+
+        function StudentApp({ curriculum, unlockedStageIds }) {
+          const [nav, setNav] = useState({ screen: "stages", stageId: null, sectionId: null, bookId: null });
+          const [toast, setToast] = useState("");
+
+          useEffect(() => {
+            if (!toast) return;
+            const t = setTimeout(() => setToast(""), 2200);
+            return () => clearTimeout(t);
+          }, [toast]);
+
+          const stages = [...curriculum.stages].sort((a, b) => a.order - b.order);
+          const stage = curriculum.stages.find((s) => s.id === nav.stageId);
+          const sections = nav.stageId ? (curriculum.sections[nav.stageId] || []) : [];
+          const section = sections.find((s) => s.id === nav.sectionId);
+          const books = nav.sectionId ? (curriculum.books[nav.sectionId] || []) : [];
+          const book = books.find((b) => b.id === nav.bookId);
+
+          const goStages = () => setNav({ screen: "stages", stageId: null, sectionId: null, bookId: null });
+          const goSections = (stageId) => {
+            if (!unlockedStageIds.includes(stageId)) {
+              setToast("هذه المرحلة مغلقة حاليًا. تواصل مع المشرف لفتحها لك.");
+              return;
+            }
+            setNav({ screen: "sections", stageId, sectionId: null, bookId: null });
+          };
+          const goBooks = (sectionId) => setNav((n) => ({ ...n, screen: "books", sectionId, bookId: null }));
+          const goLessons = (bookId) => setNav((n) => ({ ...n, screen: "lessons", bookId }));
+
+          return (
+            <div className="man-body">
+              {toast && <div className="man-toast">{toast}</div>}
+
+              {nav.screen === "stages" && (
+                <>
+                  <p className="man-section-label">المراحل الدراسية</p>
+                  {stages.length === 0 && <EmptyState text="لم يقم المشرف بإضافة أي مرحلة بعد." />}
+                  {stages.map((s, i) => {
+                    const unlocked = unlockedStageIds.includes(s.id);
+                    const secCount = (curriculum.sections[s.id] || []).length;
+                    return (
+                      <div key={s.id} className={`man-card man-stage-card ${unlocked ? "man-stage-unlocked" : "man-stage-locked"}`} onClick={() => goSections(s.id)}>
+                        <div className="man-badge-num">{i + 1}</div>
+                        <div className="man-stage-info">
+                          <div className="man-stage-name">{s.name}</div>
+                          <div className="man-stage-meta">{secCount} قسم</div>
+                        </div>
+                        {unlocked ? <Unlock size={18} className="man-lock-icon man-lock-open" /> : <Lock size={18} className="man-lock-icon" />}
+                      </div>
+                    );
+                  })}
+                </>
+              )}
+
+              {nav.screen === "sections" && (
+                <>
+                  <BackBar onBack={goStages} title={stage?.name} />
+                  {sections.length === 0 && <EmptyState text="لا توجد أقسام في هذه المرحلة بعد." />}
+                  {sections.map((sec) => (
+                    <div key={sec.id} className="man-card man-row" onClick={() => goBooks(sec.id)}>
+                      <FolderOpen size={18} className="man-row-icon" />
+                      <div className="man-row-body">
+                        <div className="man-row-title">{sec.name}</div>
+                        <div className="man-row-meta">{(curriculum.books[sec.id] || []).length} كتاب</div>
+                      </div>
+                      <ChevronLeft size={18} className="man-chev" />
                     </div>
-                    {unlocked ? <Unlock size={18} className="man-lock-icon man-lock-open" /> : <Lock size={18} className="man-lock-icon" />}
+                  ))}
+                </>
+              )}
+
+              {nav.screen === "books" && (
+                <>
+                  <BackBar onBack={() => setNav((n) => ({ ...n, screen: "sections", bookId: null }))} title={section?.name} />
+                  {books.length === 0 && <EmptyState text="لا توجد كتب في هذا القسم بعد." />}
+                  {books.map((b) => (
+                    <div key={b.id} className="man-card man-row" onClick={() => goLessons(b.id)}>
+                      <BookOpen size={18} className="man-row-icon" />
+                      <div className="man-row-body">
+                        <div className="man-row-title">{b.name}</div>
+                        <div className="man-row-meta">{(b.lessons || []).length} درس</div>
+                      </div>
+                      <ChevronLeft size={18} className="man-chev" />
+                    </div>
+                  ))}
+                </>
+              )}
+
+              {nav.screen === "lessons" && (
+                <>
+                  <BackBar onBack={() => setNav((n) => ({ ...n, screen: "books", bookId: null }))} title={book?.name} />
+                  {(!book || (book.lessons || []).length === 0) && <EmptyState text="لم تُضَف دروس لهذا الكتاب بعد." />}
+                  {book && (book.lessons || []).map((l) => (
+                    <div key={l.id} className="man-card man-lesson-card">
+                      <div className="man-row-title" style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <Music size={16} className="man-row-icon" /> {l.name}
+                      </div>
+                      {l.audioUrl ? (
+                        <audio controls src={l.audioUrl} className="man-audio" />
+                      ) : (
+                        <p className="man-hint" style={{ margin: "6px 0 0" }}>لم يُضَف الدرس الصوتي لهذا الدرس بعد.</p>
+                      )}
+                    </div>
+                  ))}
+                </>
+              )}
+            </div>
+          );
+        }
+
+        function BackBar({ onBack, title }) {
+          return (
+            <button className="man-backbar" onClick={onBack}>
+              <ArrowRight size={18} />
+              <span>{title || "رجوع"}</span>
+            </button>
+          );
+        }
+
+        function EmptyState({ text }) {
+          return (
+            <div className="man-empty">
+              <Layers size={26} />
+              <p>{text}</p>
+            </div>
+          );
+        }
+
+        /* ------------------------------ Admin views ------------------------------ */
+
+        function AdminContent({ curriculum, setCurriculum }) {
+          const [expandedStage, setExpandedStage] = useState(null);
+          const [expandedSection, setExpandedSection] = useState(null);
+          const [expandedBook, setExpandedBook] = useState(null);
+
+          const update = (fn) => {
+            const next = structuredClone(curriculum);
+            fn(next);
+            setCurriculum(next);
+          };
+
+          const addStage = (name) => update((c) => {
+            c.stages.push({ id: uid(), name, order: c.stages.length });
+          });
+          const renameStage = (id, name) => update((c) => {
+            const s = c.stages.find((x) => x.id === id); if (s) s.name = name;
+          });
+          const deleteStage = (id) => update((c) => {
+            c.stages = c.stages.filter((x) => x.id !== id);
+            const secs = c.sections[id] || [];
+            secs.forEach((sec) => delete c.books[sec.id]);
+            delete c.sections[id];
+          });
+
+          const addSection = (stageId, name) => update((c) => {
+            if (!c.sections[stageId]) c.sections[stageId] = [];
+            c.sections[stageId].push({ id: uid(), name });
+          });
+          const renameSection = (stageId, secId, name) => update((c) => {
+            const sec = (c.sections[stageId] || []).find((x) => x.id === secId); if (sec) sec.name = name;
+          });
+          const deleteSection = (stageId, secId) => update((c) => {
+            c.sections[stageId] = (c.sections[stageId] || []).filter((x) => x.id !== secId);
+            delete c.books[secId];
+          });
+
+          const addBook = (secId, name) => update((c) => {
+            if (!c.books[secId]) c.books[secId] = [];
+            c.books[secId].push({ id: uid(), name, lessons: [] });
+          });
+          const renameBook = (secId, bookId, name) => update((c) => {
+            const b = (c.books[secId] || []).find((x) => x.id === bookId); if (b) b.name = name;
+          });
+          const deleteBook = (secId, bookId) => update((c) => {
+            c.books[secId] = (c.books[secId] || []).filter((x) => x.id !== bookId);
+          });
+
+          const addLesson = (secId, bookId, name, audioUrl) => update((c) => {
+            const b = (c.books[secId] || []).find((x) => x.id === bookId);
+            if (b) { if (!b.lessons) b.lessons = []; b.lessons.push({ id: uid(), name, audioUrl: audioUrl || "" }); }
+          });
+          const renameLesson = (secId, bookId, lessonId, name) => update((c) => {
+            const b = (c.books[secId] || []).find((x) => x.id === bookId);
+            const l = b?.lessons.find((x) => x.id === lessonId); if (l) l.name = name;
+          });
+          const setLessonAudio = (secId, bookId, lessonId, audioUrl) => update((c) => {
+            const b = (c.books[secId] || []).find((x) => x.id === bookId);
+            const l = b?.lessons.find((x) => x.id === lessonId); if (l) l.audioUrl = audioUrl;
+          });
+          const deleteLesson = (secId, bookId, lessonId) => update((c) => {
+            const b = (c.books[secId] || []).find((x) => x.id === bookId);
+            if (b) b.lessons = b.lessons.filter((x) => x.id !== lessonId);
+          });
+
+          const stages = [...curriculum.stages].sort((a, b) => a.order - b.order);
+
+          return (
+            <div className="man-body">
+              <p className="man-section-label">إدارة المحتوى</p>
+              {stages.length === 0 && <EmptyState text="ابدأ بإضافة أول مرحلة." />}
+              {stages.map((stage, i) => {
+                const isOpen = expandedStage === stage.id;
+                const sections = curriculum.sections[stage.id] || [];
+                return (
+                  <div key={stage.id} className="man-card man-accordion">
+                    <div className="man-row" onClick={() => setExpandedStage(isOpen ? null : stage.id)}>
+                      <div className="man-badge-num man-badge-sm">{i + 1}</div>
+                      <div className="man-row-body">
+                        <EditableTitle className="man-row-title" value={stage.name} onSave={(v) => renameStage(stage.id, v)} />
+                        <div className="man-row-meta">{sections.length} قسم</div>
+                      </div>
+                      <ConfirmDelete onConfirm={() => deleteStage(stage.id)} />
+                      <ChevronDown size={18} className={`man-chev ${isOpen ? "man-chev-open" : ""}`} />
+                    </div>
+
+                    {isOpen && (
+                      <div className="man-nested">
+                        {sections.map((sec) => {
+                          const secOpen = expandedSection === sec.id;
+                          const books = curriculum.books[sec.id] || [];
+                          return (
+                            <div key={sec.id} className="man-card man-accordion man-nested-card">
+                              <div className="man-row" onClick={() => setExpandedSection(secOpen ? null : sec.id)}>
+                                <FolderOpen size={16} className="man-row-icon" />
+                                <div className="man-row-body">
+                                  <EditableTitle className="man-row-title" value={sec.name} onSave={(v) => renameSection(stage.id, sec.id, v)} />
+                                  <div className="man-row-meta">{books.length} كتاب</div>
+                                </div>
+                                <ConfirmDelete onConfirm={() => deleteSection(stage.id, sec.id)} />
+                                <ChevronDown size={16} className={`man-chev ${secOpen ? "man-chev-open" : ""}`} />
+                              </div>
+
+                              {secOpen && (
+                                <div className="man-nested">
+                                  {books.map((b) => {
+                                    const bookOpen = expandedBook === b.id;
+                                    return (
+                                      <div key={b.id} className="man-card man-accordion man-nested-card">
+                                        <div className="man-row" onClick={() => setExpandedBook(bookOpen ? null : b.id)}>
+                                          <BookOpen size={16} className="man-row-icon" />
+                                          <div className="man-row-body">
+                                            <EditableTitle className="man-row-title" value={b.name} onSave={(v) => renameBook(sec.id, b.id, v)} />
+                                            <div className="man-row-meta">{(b.lessons || []).length} درس</div>
+                                          </div>
+                                          <ConfirmDelete onConfirm={() => deleteBook(sec.id, b.id)} />
+                                          <ChevronDown size={16} className={`man-chev ${bookOpen ? "man-chev-open" : ""}`} />
+                                        </div>
+
+                                        {bookOpen && (
+                                          <div className="man-nested">
+                                            {(b.lessons || []).map((l) => (
+                                              <div key={l.id} className="man-lesson-admin-row">
+                                                <Music size={14} className="man-row-icon" />
+                                                <div style={{ flex: 1 }}>
+                                                  <EditableTitle className="man-row-title" value={l.name} onSave={(v) => renameLesson(sec.id, b.id, l.id, v)} />
+                                                  <input
+                                                    className="man-input man-input-sm"
+                                                    style={{ marginTop: 6 }}
+                                                    placeholder="رابط الدرس الصوتي (اختياري)"
+                                                    defaultValue={l.audioUrl}
+                                                    onBlur={(e) => setLessonAudio(sec.id, b.id, l.id, e.target.value.trim())}
+                                                  />
+                                                </div>
+                                                <ConfirmDelete onConfirm={() => deleteLesson(sec.id, b.id, l.id)} />
+                                              </div>
+                                            ))}
+                                            <InlineAdd placeholder="إضافة درس" extra="رابط صوتي (اختياري)" onAdd={(name, audioUrl) => addLesson(sec.id, b.id, name, audioUrl)} />
+                                          </div>
+                                        )}
+                                      </div>
+                                    );
+                                  })}
+                                  <InlineAdd placeholder="إضافة كتاب" onAdd={(name) => addBook(sec.id, name)} />
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                        <InlineAdd placeholder="إضافة قسم" onAdd={(name) => addSection(stage.id, name)} />
+                      </div>
+                    )}
                   </div>
                 );
               })}
-            </>
-          )}
-
-          {nav.screen === "sections" && (
-            <>
-              <BackBar onBack={goStages} title={stage?.name} />
-              {sections.length === 0 && <EmptyState text="لا توجد أقسام في هذه المرحلة بعد." />}
-              {sections.map((sec) => (
-                <div key={sec.id} className="man-card man-row" onClick={() => goBooks(sec.id)}>
-                  <FolderOpen size={18} className="man-row-icon" />
-                  <div className="man-row-body">
-                    <div className="man-row-title">{sec.name}</div>
-                    <div className="man-row-meta">{(curriculum.books[sec.id] || []).length} كتاب</div>
-                  </div>
-                  <ChevronLeft size={18} className="man-chev" />
-                </div>
-              ))}
-            </>
-          )}
-
-          {nav.screen === "books" && (
-            <>
-              <BackBar onBack={() => setNav((n) => ({ ...n, screen: "sections", bookId: null }))} title={section?.name} />
-              {books.length === 0 && <EmptyState text="لا توجد كتب في هذا القسم بعد." />}
-              {books.map((b) => (
-                <div key={b.id} className="man-card man-row" onClick={() => goLessons(b.id)}>
-                  <BookOpen size={18} className="man-row-icon" />
-                  <div className="man-row-body">
-                    <div className="man-row-title">{b.name}</div>
-                    <div className="man-row-meta">{(b.lessons || []).length} درس</div>
-                  </div>
-                  <ChevronLeft size={18} className="man-chev" />
-                </div>
-              ))}
-            </>
-          )}
-
-          {nav.screen === "lessons" && (
-            <>
-              <BackBar onBack={() => setNav((n) => ({ ...n, screen: "books", bookId: null }))} title={book?.name} />
-              {(!book || (book.lessons || []).length === 0) && <EmptyState text="لم تُضَف دروس لهذا الكتاب بعد." />}
-              {book && (book.lessons || []).map((l) => (
-                <div key={l.id} className="man-card man-lesson-card">
-                  <div className="man-row-title" style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <Music size={16} className="man-row-icon" /> {l.name}
-                  </div>
-                  {l.audioUrl ? (
-                    <audio controls src={l.audioUrl} className="man-audio" />
-                  ) : (
-                    <p className="man-hint" style={{ margin: "6px 0 0" }}>لم يُضَف الدرس الصوتي لهذا الدرس بعد.</p>
-                  )}
-                </div>
-              ))}
-            </>
-          )}
-        </div>
-      );
-    }
-
-    function BackBar({ onBack, title }) {
-      return (
-        <button className="man-backbar" onClick={onBack}>
-          <ArrowRight size={18} />
-          <span>{title || "رجوع"}</span>
-        </button>
-      );
-    }
-
-    function EmptyState({ text }) {
-      return (
-        <div className="man-empty">
-          <Layers size={26} />
-          <p>{text}</p>
-        </div>
-      );
-    }
-
-    /* ------------------------------ Admin views ------------------------------ */
-
-    function AdminContent({ curriculum, setCurriculum }) {
-      const [expandedStage, setExpandedStage] = useState(null);
-      const [expandedSection, setExpandedSection] = useState(null);
-      const [expandedBook, setExpandedBook] = useState(null);
-
-      const update = (fn) => {
-        const next = structuredClone(curriculum);
-        fn(next);
-        setCurriculum(next);
-      };
-
-      const addStage = (name) => update((c) => {
-        c.stages.push({ id: uid(), name, order: c.stages.length });
-      });
-      const renameStage = (id, name) => update((c) => {
-        const s = c.stages.find((x) => x.id === id); if (s) s.name = name;
-      });
-      const deleteStage = (id) => update((c) => {
-        c.stages = c.stages.filter((x) => x.id !== id);
-        const secs = c.sections[id] || [];
-        secs.forEach((sec) => delete c.books[sec.id]);
-        delete c.sections[id];
-      });
-
-      const addSection = (stageId, name) => update((c) => {
-        if (!c.sections[stageId]) c.sections[stageId] = [];
-        c.sections[stageId].push({ id: uid(), name });
-      });
-      const renameSection = (stageId, secId, name) => update((c) => {
-        const sec = (c.sections[stageId] || []).find((x) => x.id === secId); if (sec) sec.name = name;
-      });
-      const deleteSection = (stageId, secId) => update((c) => {
-        c.sections[stageId] = (c.sections[stageId] || []).filter((x) => x.id !== secId);
-        delete c.books[secId];
-      });
-
-      const addBook = (secId, name) => update((c) => {
-        if (!c.books[secId]) c.books[secId] = [];
-        c.books[secId].push({ id: uid(), name, lessons: [] });
-      });
-      const renameBook = (secId, bookId, name) => update((c) => {
-        const b = (c.books[secId] || []).find((x) => x.id === bookId); if (b) b.name = name;
-      });
-      const deleteBook = (secId, bookId) => update((c) => {
-        c.books[secId] = (c.books[secId] || []).filter((x) => x.id !== bookId);
-      });
-
-      const addLesson = (secId, bookId, name, audioUrl) => update((c) => {
-        const b = (c.books[secId] || []).find((x) => x.id === bookId);
-        if (b) { if (!b.lessons) b.lessons = []; b.lessons.push({ id: uid(), name, audioUrl: audioUrl || "" }); }
-      });
-      const renameLesson = (secId, bookId, lessonId, name) => update((c) => {
-        const b = (c.books[secId] || []).find((x) => x.id === bookId);
-        const l = b?.lessons.find((x) => x.id === lessonId); if (l) l.name = name;
-      });
-      const setLessonAudio = (secId, bookId, lessonId, audioUrl) => update((c) => {
-        const b = (c.books[secId] || []).find((x) => x.id === bookId);
-        const l = b?.lessons.find((x) => x.id === lessonId); if (l) l.audioUrl = audioUrl;
-      });
-      const deleteLesson = (secId, bookId, lessonId) => update((c) => {
-        const b = (c.books[secId] || []).find((x) => x.id === bookId);
-        if (b) b.lessons = b.lessons.filter((x) => x.id !== lessonId);
-      });
-
-      const stages = [...curriculum.stages].sort((a, b) => a.order - b.order);
-
-      return (
-        <div className="man-body">
-          <p className="man-section-label">إدارة المحتوى</p>
-          {stages.length === 0 && <EmptyState text="ابدأ بإضافة أول مرحلة." />}
-          {stages.map((stage, i) => {
-            const isOpen = expandedStage === stage.id;
-            const sections = curriculum.sections[stage.id] || [];
-            return (
-              <div key={stage.id} className="man-card man-accordion">
-                <div className="man-row" onClick={() => setExpandedStage(isOpen ? null : stage.id)}>
-                  <div className="man-badge-num man-badge-sm">{i + 1}</div>
-                  <div className="man-row-body">
-                    <EditableTitle className="man-row-title" value={stage.name} onSave={(v) => renameStage(stage.id, v)} />
-                    <div className="man-row-meta">{sections.length} قسم</div>
-                  </div>
-                  <ConfirmDelete onConfirm={() => deleteStage(stage.id)} />
-                  <ChevronDown size={18} className={`man-chev ${isOpen ? "man-chev-open" : ""}`} />
-                </div>
-
-                {isOpen && (
-                  <div className="man-nested">
-                    {sections.map((sec) => {
-                      const secOpen = expandedSection === sec.id;
-                      const books = curriculum.books[sec.id] || [];
-                      return (
-                        <div key={sec.id} className="man-card man-accordion man-nested-card">
-                          <div className="man-row" onClick={() => setExpandedSection(secOpen ? null : sec.id)}>
-                            <FolderOpen size={16} className="man-row-icon" />
-                            <div className="man-row-body">
-                              <EditableTitle className="man-row-title" value={sec.name} onSave={(v) => renameSection(stage.id, sec.id, v)} />
-                              <div className="man-row-meta">{books.length} كتاب</div>
-                            </div>
-                            <ConfirmDelete onConfirm={() => deleteSection(stage.id, sec.id)} />
-                            <ChevronDown size={16} className={`man-chev ${secOpen ? "man-chev-open" : ""}`} />
-                          </div>
-
-                          {secOpen && (
-                            <div className="man-nested">
-                              {books.map((b) => {
-                                const bookOpen = expandedBook === b.id;
-                                return (
-                                  <div key={b.id} className="man-card man-accordion man-nested-card">
-                                    <div className="man-row" onClick={() => setExpandedBook(bookOpen ? null : b.id)}>
-                                      <BookOpen size={16} className="man-row-icon" />
-                                      <div className="man-row-body">
-                                        <EditableTitle className="man-row-title" value={b.name} onSave={(v) => renameBook(sec.id, b.id, v)} />
-                                        <div className="man-row-meta">{(b.lessons || []).length} درس</div>
-                                      </div>
-                                      <ConfirmDelete onConfirm={() => deleteBook(sec.id, b.id)} />
-                                      <ChevronDown size={16} className={`man-chev ${bookOpen ? "man-chev-open" : ""}`} />
-                                    </div>
-
-                                    {bookOpen && (
-                                      <div className="man-nested">
-                                        {(b.lessons || []).map((l) => (
-                                          <div key={l.id} className="man-lesson-admin-row">
-                                            <Music size={14} className="man-row-icon" />
-                                            <div style={{ flex: 1 }}>
-                                              <EditableTitle className="man-row-title" value={l.name} onSave={(v) => renameLesson(sec.id, b.id, l.id, v)} />
-                                              <input
-                                                className="man-input man-input-sm"
-                                                style={{ marginTop: 6 }}
-                                                placeholder="رابط الدرس الصوتي (اختياري)"
-                                                defaultValue={l.audioUrl}
-                                                onBlur={(e) => setLessonAudio(sec.id, b.id, l.id, e.target.value.trim())}
-                                              />
-                                            </div>
-                                            <ConfirmDelete onConfirm={() => deleteLesson(sec.id, b.id, l.id)} />
-                                          </div>
-                                        ))}
-                                        <InlineAdd placeholder="إضافة درس" extra="رابط صوتي (اختياري)" onAdd={(name, audioUrl) => addLesson(sec.id, b.id, name, audioUrl)} />
-                                      </div>
-                                    )}
-                                  </div>
-                                );
-                              })}
-                              <InlineAdd placeholder="إضافة كتاب" onAdd={(name) => addBook(sec.id, name)} />
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                    <InlineAdd placeholder="إضافة قسم" onAdd={(name) => addSection(stage.id, name)} />
-                  </div>
-                )}
-              </div>
-            );
-          })}
-          <InlineAdd placeholder="إضافة مرحلة جديدة" onAdd={(name) => addStage(name)} />
-        </div>
-      );
-    }
-
-    function AdminStudents({ curriculum, users, setUsers }) {
-      const [expanded, setExpanded] = useState(null);
-      const stages = [...curriculum.stages].sort((a, b) => a.order - b.order);
-      const usernames = Object.keys(users);
-
-      const updateUser = (username, fn) => {
-        const next = structuredClone(users);
-        fn(next[username]);
-        setUsers(next);
-      };
-
-      const toggleStage = (username, stageId, checked) => {
-        updateUser(username, (u) => {
-          const set = new Set(u.unlockedStageIds || []);
-          if (checked) set.add(stageId); else set.delete(stageId);
-          u.unlockedStageIds = [...set];
-        });
-      };
-
-      const deleteUser = (username) => {
-        const next = structuredClone(users);
-        delete next[username];
-        setUsers(next);
-      };
-
-      return (
-        <div className="man-body">
-          <p className="man-section-label">إدارة الطلاب</p>
-          {usernames.length === 0 && <EmptyState text="لم يسجّل أي طالب حسابًا بعد." />}
-          {usernames.map((username) => {
-            const u = users[username];
-            const isOpen = expanded === username;
-            const unlockedCount = (u.unlockedStageIds || []).length;
-            return (
-              <div key={username} className="man-card man-accordion">
-                <div className="man-row" onClick={() => setExpanded(isOpen ? null : username)}>
-                  <GraduationCap size={18} className="man-row-icon" />
-                  <div className="man-row-body">
-                    <div className="man-row-title">{username}</div>
-                    <div className="man-row-meta">{unlockedCount} من {stages.length} مرحلة مفتوحة</div>
-                  </div>
-                  <ConfirmDelete onConfirm={() => deleteUser(username)} label="حذف الطالب" />
-                  <ChevronDown size={18} className={`man-chev ${isOpen ? "man-chev-open" : ""}`} />
-                </div>
-
-                {isOpen && (
-                  <div className="man-nested">
-                    {stages.length === 0 && <p className="man-hint">لا توجد مراحل لإدارتها بعد.</p>}
-                    {stages.map((s, i) => {
-                      const checked = (u.unlockedStageIds || []).includes(s.id);
-                      return (
-                        <div key={s.id} className="man-toggle-row">
-                          <div className="man-badge-num man-badge-sm">{i + 1}</div>
-                          <span className="man-row-title" style={{ flex: 1 }}>{s.name}</span>
-                          <Switch checked={checked} onChange={(v) => toggleStage(username, s.id, v)} />
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      );
-    }
-
-    function AdminApp({ curriculum, setCurriculum, users, setUsers }) {
-      const [tab, setTab] = useState("content");
-      return (
-        <>
-          <div className="man-tabs man-tabs-admin">
-            <button className={`man-tab ${tab === "content" ? "man-tab-active" : ""}`} onClick={() => setTab("content")}>
-              <Layers size={15} /> المحتوى
-            </button>
-            <button className={`man-tab ${tab === "students" ? "man-tab-active" : ""}`} onClick={() => setTab("students")}>
-              <UsersIcon size={15} /> الطلاب
-            </button>
-          </div>
-          {tab === "content"
-            ? <AdminContent curriculum={curriculum} setCurriculum={setCurriculum} />
-            : <AdminStudents curriculum={curriculum} users={users} setUsers={setUsers} />}
-        </>
-      );
-    }
-
-    /* --------------------------------- Root App --------------------------------- */
-
-    function App() {
-      const [session, setSession] = useState(null);
-      const [authError, setAuthError] = useState("");
-      const [authBusy, setAuthBusy] = useState(false);
-      const [ready, setReady] = useState(false);
-
-      const [curriculum, setCurriculumState] = useState(emptyCurriculum);
-      const [users, setUsersState] = useState({});
-
-      useEffect(() => {
-        (async () => {
-          const [cRaw, uRaw] = await Promise.all([
-            storageGet("curriculum", true),
-            storageGet("users", true),
-          ]);
-          setCurriculumState(cRaw ? JSON.parse(cRaw) : emptyCurriculum);
-          setUsersState(uRaw ? JSON.parse(uRaw) : {});
-          setReady(true);
-        })();
-      }, []);
-
-      const setCurriculum = useCallback((next) => {
-        setCurriculumState(next);
-        storageSet("curriculum", JSON.stringify(next), true);
-      }, []);
-
-      const setUsers = useCallback((next) => {
-        setUsersState(next);
-        storageSet("users", JSON.stringify(next), true);
-      }, []);
-
-      const handleLogin = (username, password) => {
-        setAuthError("");
-        if (!username || !password) { setAuthError("الرجاء إدخال اسم المستخدم وكلمة المرور."); return; }
-        if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
-          setSession({ username, role: "admin" });
-          return;
-        }
-        const u = users[username];
-        if (u && u.password === password) {
-          setSession({ username, role: "student" });
-          return;
-        }
-        setAuthError("بيانات الدخول غير صحيحة.");
-      };
-
-      const handleRegister = async (username, password, confirm) => {
-        setAuthError("");
-        if (!username || username.length < 3) { setAuthError("اسم المستخدم يجب أن يكون 3 أحرف على الأقل."); return; }
-        if (username === ADMIN_USERNAME) { setAuthError("هذا الاسم محجوز."); return; }
-        if (!password || password.length < 4) { setAuthError("كلمة المرور يجب أن تكون 4 أحرف على الأقل."); return; }
-        if (password !== confirm) { setAuthError("كلمتا المرور غير متطابقتين."); return; }
-        if (users[username]) { setAuthError("اسم المستخدم مستخدم بالفعل."); return; }
-
-        setAuthBusy(true);
-        const next = { ...users, [username]: { password, unlockedStageIds: [] } };
-        setUsers(next);
-        setAuthBusy(false);
-        setSession({ username, role: "student" });
-      };
-
-      const handleLogout = () => {
-        setSession(null);
-        setAuthError("");
-      };
-
-      const currentUnlocked = session && session.role === "student" ? (users[session.username]?.unlockedStageIds || []) : [];
-
-      return (
-        <div className="man-shell" dir="rtl" lang="ar">
-          <style>{`
-            .man-shell {
-              --ink: #123832;
-              --ink-2: #0c2b27;
-              --gold: #a9772f;
-              --gold-light: #d9b968;
-              --paper: #f1eee3;
-              --paper-2: #fdfcf7;
-              --locked: #8a3324;
-              --success: #2f6b4f;
-              --line: #ddd5c0;
-              --text: #23302c;
-              --text-soft: #6b6355;
-              max-width: 430px;
-              margin: 0 auto;
-              min-height: 100vh;
-              background: var(--paper);
-              font-family: 'Tajawal', sans-serif;
-              color: var(--text);
-              box-shadow: 0 0 40px rgba(0,0,0,0.08);
-              display: flex;
-              flex-direction: column;
-            }
-            .man-shell * { box-sizing: border-box; }
-
-            .man-header {
-              background: linear-gradient(160deg, var(--ink) 0%, var(--ink-2) 100%);
-              color: #f4efe2;
-              padding: 16px 18px;
-              display: flex;
-              align-items: center;
-              justify-content: space-between;
-              position: sticky;
-              top: 0;
-              z-index: 5;
-            }
-            .man-header-title { font-family: 'Amiri', serif; font-size: 20px; color: var(--gold-light); display:flex; align-items:center; gap:8px; }
-            .man-header-user { display: flex; align-items: center; gap: 10px; font-size: 13px; }
-            .man-role-badge {
-              background: rgba(217,185,104,0.18);
-              border: 1px solid var(--gold-light);
-              color: var(--gold-light);
-              border-radius: 20px;
-              padding: 3px 10px;
-              font-size: 11px;
-              display: flex; align-items: center; gap: 4px;
-            }
-            .man-logout-btn {
-              background: transparent; border: none; color: #f4efe2; cursor: pointer;
-              display: flex; align-items: center; padding: 6px; border-radius: 8px;
-            }
-            .man-logout-btn:hover { background: rgba(255,255,255,0.08); }
-
-            .man-body { padding: 16px; flex: 1; }
-
-            .man-auth { padding: 28px 22px; }
-            .man-auth-hero { text-align: center; margin-bottom: 26px; }
-            .man-logo {
-              width: 56px; height: 56px; border-radius: 16px;
-              background: var(--ink); color: var(--gold-light);
-              display: flex; align-items: center; justify-content: center;
-              margin: 0 auto 14px; border: 2px solid var(--gold);
-            }
-            .man-app-title { font-family: 'Amiri', serif; font-size: 30px; color: var(--ink); margin: 0; }
-            .man-app-sub { color: var(--text-soft); font-size: 13px; margin-top: 6px; }
-
-            .man-tabs { display: flex; gap: 8px; padding: 0 22px; }
-            .man-tabs-admin { padding: 14px 16px 0; }
-            .man-tab {
-              flex: 1; padding: 10px; text-align: center; background: transparent;
-              border: none; border-bottom: 2px solid var(--line); color: var(--text-soft);
-              font-family: 'Tajawal', sans-serif; font-weight: 500; cursor: pointer; font-size: 14px;
-              display: flex; align-items: center; justify-content: center; gap: 6px;
-            }
-            .man-tab-active { color: var(--ink); border-bottom: 2px solid var(--gold); font-weight: 700; }
-
-            .man-auth-form { padding: 22px; }
-            .man-label { display: block; font-size: 12px; color: var(--text-soft); margin: 12px 0 5px; }
-            .man-input {
-              width: 100%; padding: 11px 12px; border-radius: 10px; border: 1px solid var(--line);
-              background: var(--paper-2); font-family: 'Tajawal', sans-serif; font-size: 14px; color: var(--text);
-            }
-            .man-input:focus { outline: none; border-color: var(--gold); }
-            .man-input-sm { padding: 6px 10px; font-size: 13px; border-radius: 8px; }
-
-            .man-error { color: var(--locked); font-size: 12px; margin-top: 10px; background: rgba(138,51,36,0.08); padding: 8px 10px; border-radius: 8px; }
-            .man-hint { color: var(--text-soft); font-size: 11px; text-align: center; margin-top: 14px; line-height: 1.7; }
-
-            .man-btn {
-              border: none; border-radius: 10px; padding: 11px 16px; cursor: pointer;
-              font-family: 'Tajawal', sans-serif; font-weight: 700; font-size: 14px;
-              display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-            }
-            .man-btn-primary { background: var(--ink); color: var(--gold-light); }
-            .man-btn-primary:hover { background: var(--ink-2); }
-            .man-btn-ghost { background: transparent; color: var(--text-soft); border: 1px solid var(--line); }
-            .man-btn-full { width: 100%; margin-top: 18px; padding: 13px; }
-            .man-btn-sm { padding: 7px 12px; font-size: 12px; }
-            .man-spin { animation: man-spin 0.9s linear infinite; }
-            @keyframes man-spin { to { transform: rotate(360deg); } }
-
-            .man-section-label { font-family: 'Amiri', serif; font-size: 17px; color: var(--ink); margin: 4px 0 12px; }
-
-            .man-card {
-              background: var(--paper-2); border: 1px solid var(--line); border-radius: 12px;
-              padding: 12px; margin-bottom: 10px;
-            }
-
-            .man-stage-card { display: flex; align-items: center; gap: 12px; cursor: pointer; border-right: 4px solid var(--line); }
-            .man-stage-unlocked { border-right-color: var(--success); }
-            .man-stage-locked { opacity: 0.72; border-right-color: var(--locked); }
-            .man-stage-info { flex: 1; }
-            .man-stage-name { font-weight: 700; font-size: 15px; }
-            .man-stage-meta { font-size: 12px; color: var(--text-soft); margin-top: 2px; }
-            .man-lock-icon { color: var(--locked); }
-            .man-lock-open { color: var(--success); }
-
-            .man-badge-num {
-              min-width: 32px; height: 32px; border-radius: 50%;
-              background: var(--paper); border: 2px solid var(--gold);
-              color: var(--ink); font-weight: 700; font-family: 'Amiri', serif;
-              display: flex; align-items: center; justify-content: center; font-size: 14px;
-            }
-            .man-badge-sm { min-width: 26px; height: 26px; font-size: 12px; border-width: 1.5px; }
-
-            .man-row { display: flex; align-items: center; gap: 10px; cursor: pointer; }
-            .man-row-icon { color: var(--gold); flex-shrink: 0; }
-            .man-row-body { flex: 1; min-width: 0; }
-            .man-row-title { font-weight: 600; font-size: 14px; }
-            .man-row-meta { font-size: 11.5px; color: var(--text-soft); margin-top: 2px; }
-            .man-chev { color: var(--text-soft); flex-shrink: 0; transition: transform 0.15s ease; }
-            .man-chev-open { transform: rotate(180deg); }
-
-            .man-backbar {
-              display: flex; align-items: center; gap: 8px; background: transparent; border: none;
-              color: var(--ink); font-family: 'Amiri', serif; font-size: 18px; padding: 4px 0 14px;
-              cursor: pointer; width: 100%;
-            }
-
-            .man-empty { text-align: center; padding: 34px 10px; color: var(--text-soft); }
-            .man-empty svg { color: var(--gold-light); margin-bottom: 8px; }
-            .man-empty p { font-size: 13px; margin: 0; }
-
-            .man-toast {
-              background: var(--ink); color: var(--gold-light); padding: 10px 14px; border-radius: 10px;
-              font-size: 12.5px; margin-bottom: 12px; text-align: center;
-            }
-
-            .man-audio { width: 100%; margin-top: 8px; height: 34px; }
-
-            .man-accordion { padding: 0; overflow: hidden; }
-            .man-accordion > .man-row { padding: 12px; }
-            .man-nested { padding: 4px 10px 10px 10px; border-top: 1px dashed var(--line); }
-            .man-nested-card { margin: 8px 0 0; }
-
-            .man-add-trigger {
-              display: flex; align-items: center; gap: 6px; background: transparent;
-              border: 1px dashed var(--gold); color: var(--ink); border-radius: 10px;
-              padding: 9px 12px; font-size: 13px; cursor: pointer; width: 100%; justify-content: center;
-              font-family: 'Tajawal', sans-serif; margin-top: 6px;
-            }
-            .man-add-form { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
-            .man-add-actions { display: flex; gap: 6px; }
-
-            .man-icon-btn {
-              background: transparent; border: none; color: var(--text-soft); cursor: pointer;
-              padding: 4px; border-radius: 6px; display: flex; align-items: center;
-            }
-            .man-icon-btn:hover { background: rgba(0,0,0,0.06); }
-            .man-icon-danger { color: var(--locked); }
-            .man-confirm-row { display: flex; gap: 2px; }
-            .man-edit-icon { color: var(--gold); cursor: pointer; opacity: 0.75; }
-            .man-edit-icon:hover { opacity: 1; }
-
-            .man-lesson-admin-row { display: flex; align-items: flex-start; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--line); }
-            .man-lesson-admin-row:last-child { border-bottom: none; }
-
-            .man-toggle-row { display: flex; align-items: center; gap: 10px; padding: 8px 4px; border-bottom: 1px solid var(--line); }
-            .man-toggle-row:last-child { border-bottom: none; }
-
-            .man-switch { position: relative; display: inline-block; width: 40px; height: 22px; }
-            .man-switch input { opacity: 0; width: 0; height: 0; }
-            .man-switch-track {
-              position: absolute; inset: 0; background: #d8d2c1; border-radius: 20px; transition: 0.2s;
-            }
-            .man-switch-thumb {
-              position: absolute; top: 2px; right: 2px; width: 18px; height: 18px; background: white;
-              border-radius: 50%; transition: 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.3);
-            }
-            .man-switch input:checked + .man-switch-track { background: var(--success); }
-            .man-switch input:checked + .man-switch-track .man-switch-thumb { transform: translateX(-18px); }
-          `}</style>
-
-          {!ready ? (
-            <div className="man-empty" style={{ paddingTop: 80 }}>
-              <Loader2 size={26} className="man-spin" />
-              <p>جارٍ التحميل...</p>
+              <InlineAdd placeholder="إضافة مرحلة جديدة" onAdd={(name) => addStage(name)} />
             </div>
-          ) : !session ? (
-            <AuthScreen onLogin={handleLogin} onRegister={handleRegister} error={authError} busy={authBusy} />
-          ) : (
+          );
+        }
+
+        function AdminStudents({ curriculum, users, setUsers }) {
+          const [expanded, setExpanded] = useState(null);
+          const stages = [...curriculum.stages].sort((a, b) => a.order - b.order);
+          const usernames = Object.keys(users).filter((u) => users[u].role !== "admin");
+
+          const updateUser = (username, fn) => {
+            const next = structuredClone(users);
+            fn(next[username]);
+            setUsers(next);
+          };
+
+          const toggleStage = (username, stageId, checked) => {
+            updateUser(username, (u) => {
+              const set = new Set(u.unlockedStageIds || []);
+              if (checked) set.add(stageId); else set.delete(stageId);
+              u.unlockedStageIds = [...set];
+            });
+          };
+
+          const deleteUser = (username) => {
+            const next = structuredClone(users);
+            delete next[username];
+            setUsers(next);
+          };
+
+          return (
+            <div className="man-body">
+              <p className="man-section-label">إدارة الطلاب</p>
+              {usernames.length === 0 && <EmptyState text="لم يسجّل أي طالب حسابًا بعد." />}
+              {usernames.map((username) => {
+                const u = users[username];
+                const isOpen = expanded === username;
+                const unlockedCount = (u.unlockedStageIds || []).length;
+                return (
+                  <div key={username} className="man-card man-accordion">
+                    <div className="man-row" onClick={() => setExpanded(isOpen ? null : username)}>
+                      <GraduationCap size={18} className="man-row-icon" />
+                      <div className="man-row-body">
+                        <div className="man-row-title">{username}</div>
+                        <div className="man-row-meta">{unlockedCount} من {stages.length} مرحلة مفتوحة</div>
+                      </div>
+                      <ConfirmDelete onConfirm={() => deleteUser(username)} label="حذف الطالب" />
+                      <ChevronDown size={18} className={`man-chev ${isOpen ? "man-chev-open" : ""}`} />
+                    </div>
+
+                    {isOpen && (
+                      <div className="man-nested">
+                        {stages.length === 0 && <p className="man-hint">لا توجد مراحل لإدارتها بعد.</p>}
+                        {stages.map((s, i) => {
+                          const checked = (u.unlockedStageIds || []).includes(s.id);
+                          return (
+                            <div key={s.id} className="man-toggle-row">
+                              <div className="man-badge-num man-badge-sm">{i + 1}</div>
+                              <span className="man-row-title" style={{ flex: 1 }}>{s.name}</span>
+                              <Switch checked={checked} onChange={(v) => toggleStage(username, s.id, v)} />
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          );
+        }
+
+        function AdminApp({ curriculum, setCurriculum, users, setUsers }) {
+          const [tab, setTab] = useState("content");
+          return (
             <>
-              <div className="man-header">
-                <div className="man-header-title"><BookOpen size={20} /> المدرسة الأحمدية</div>
-                <div className="man-header-user">
-                  <span className="man-role-badge">
-                    {session.role === "admin" ? <ShieldCheck size={13} /> : <User size={13} />}
-                    {session.role === "admin" ? "مشرف" : session.username}
-                  </span>
-                  <button className="man-logout-btn" onClick={handleLogout} title="تسجيل الخروج"><LogOut size={17} /></button>
-                </div>
+              <div className="man-tabs man-tabs-admin">
+                <button className={`man-tab ${tab === "content" ? "man-tab-active" : ""}`} onClick={() => setTab("content")}>
+                  <Layers size={15} /> المحتوى
+                </button>
+                <button className={`man-tab ${tab === "students" ? "man-tab-active" : ""}`} onClick={() => setTab("students")}>
+                  <UsersIcon size={15} /> الطلاب
+                </button>
               </div>
-
-              {session.role === "admin" ? (
-                <AdminApp curriculum={curriculum} setCurriculum={setCurriculum} users={users} setUsers={setUsers} />
-              ) : (
-                <StudentApp curriculum={curriculum} unlockedStageIds={currentUnlocked} />
-              )}
+              {tab === "content"
+                ? <AdminContent curriculum={curriculum} setCurriculum={setCurriculum} />
+                : <AdminStudents curriculum={curriculum} users={users} setUsers={setUsers} />}
             </>
-          )}
-        </div>
-      );
-    }
+          );
+        }
 
-    // Render App
-    const root = ReactDOM.createRoot(document.getElementById("root"));
-    root.render(<App />);
-  </script>
+        /* --------------------------------- Root --------------------------------- */
+
+        function App() {
+          const [session, setSession] = useState(null);
+          const [authError, setAuthError] = useState("");
+          const [authBusy, setAuthBusy] = useState(false);
+          const [ready, setReady] = useState(false);
+
+          const [curriculum, setCurriculumState] = useState(emptyCurriculum);
+          const [users, setUsersState] = useState({});
+
+          const fetchLatest = useCallback(async () => {
+            const [cRaw, uRaw] = await Promise.all([
+              storageGet("curriculum", true),
+              storageGet("users", true),
+            ]);
+            let usersObj = uRaw ? JSON.parse(uRaw) : {};
+
+            // Make sure a real, visible admin account always exists in storage.
+            if (!usersObj[ADMIN_USERNAME]) {
+              usersObj = { ...usersObj, [ADMIN_USERNAME]: { password: ADMIN_PASSWORD, role: "admin", unlockedStageIds: [] } };
+              await storageSet("users", JSON.stringify(usersObj), true);
+            }
+
+            const curriculumObj = cRaw ? JSON.parse(cRaw) : emptyCurriculum;
+
+            setCurriculumState((prev) => (JSON.stringify(prev) === JSON.stringify(curriculumObj) ? prev : curriculumObj));
+            setUsersState((prev) => (JSON.stringify(prev) === JSON.stringify(usersObj) ? prev : usersObj));
+            return { curriculumObj, usersObj };
+          }, []);
+
+          useEffect(() => {
+            (async () => {
+              await fetchLatest();
+              setReady(true);
+            })();
+          }, [fetchLatest]);
+
+          useEffect(() => {
+            if (!session) return;
+            const interval = setInterval(fetchLatest, 4000);
+            return () => clearInterval(interval);
+          }, [session, fetchLatest]);
+
+          const setCurriculum = useCallback((next) => {
+            setCurriculumState(next);
+            storageSet("curriculum", JSON.stringify(next), true);
+          }, []);
+
+          const setUsers = useCallback((next) => {
+            setUsersState(next);
+            storageSet("users", JSON.stringify(next), true);
+          }, []);
+
+          const handleLogin = async (username, password) => {
+            setAuthError("");
+            if (!username || !password) { setAuthError("الرجاء إدخال اسم المستخدم وكلمة المرور."); return; }
+            setAuthBusy(true);
+            const { usersObj } = await fetchLatest();
+            const u = usersObj[username];
+            setAuthBusy(false);
+            if (u && u.password === password) {
+              setSession({ username, role: u.role === "admin" ? "admin" : "student" });
+              return;
+            }
+            setAuthError("بيانات الدخول غير صحيحة.");
+          };
+
+          const handleRegister = async (username, password, confirm) => {
+            setAuthError("");
+            if (!username || username.length < 3) { setAuthError("اسم المستخدم يجب أن يكون 3 أحرف على الأقل."); return; }
+            if (username === ADMIN_USERNAME) { setAuthError("هذا الاسم محجوز."); return; }
+            if (!password || password.length < 4) { setAuthError("كلمة المرور يجب أن تكون 4 أحرف على الأقل."); return; }
+            if (password !== confirm) { setAuthError("كلمتا المرور غير متطابقتين."); return; }
+
+            setAuthBusy(true);
+            const { usersObj } = await fetchLatest();
+            if (usersObj[username]) {
+              setAuthBusy(false);
+              setAuthError("اسم المستخدم مستخدم بالفعل.");
+              return;
+            }
+            const next = { ...usersObj, [username]: { password, role: "student", unlockedStageIds: [] } };
+            setUsers(next);
+            setAuthBusy(false);
+            setSession({ username, role: "student" });
+          };
+
+          const handleLogout = () => {
+            setSession(null);
+            setAuthError("");
+          };
+
+          const [refreshing, setRefreshing] = useState(false);
+          const handleRefresh = async () => {
+            setRefreshing(true);
+            await fetchLatest();
+            setRefreshing(false);
+          };
+
+          const currentUnlocked = session && session.role === "student" ? (users[session.username]?.unlockedStageIds || []) : [];
+
+          return (
+            <div className="man-shell" dir="rtl" lang="ar">
+              {!ready ? (
+                <div className="man-empty" style={{ paddingTop: 80 }}>
+                  <Loader2 size={26} className="man-spin" />
+                  <p>جارٍ التحميل...</p>
+                </div>
+              ) : !session ? (
+                <AuthScreen onLogin={handleLogin} onRegister={handleRegister} error={authError} busy={authBusy} />
+              ) : (
+                <>
+                  <div className="man-header">
+                    <div className="man-header-title"><BookOpen size={20} /> المدرسة الأحمدية</div>
+                    <div className="man-header-user">
+                      <span className="man-role-badge">
+                        {session.role === "admin" ? <ShieldCheck size={13} /> : <User size={13} />}
+                        {session.role === "admin" ? "مشرف" : session.username}
+                      </span>
+                      <button className={`man-logout-btn ${refreshing ? "man-spin" : ""}`} onClick={handleRefresh} title="تحديث البيانات"><RotateCw size={16} /></button>
+                      <button className="man-logout-btn" onClick={handleLogout} title="تسجيل الخروج"><LogOut size={17} /></button>
+                    </div>
+                  </div>
+
+                  {session.role === "admin" ? (
+                    <AdminApp curriculum={curriculum} setCurriculum={setCurriculum} users={users} setUsers={setUsers} />
+                  ) : (
+                    <StudentApp curriculum={curriculum} unlockedStageIds={currentUnlocked} />
+                  )}
+                </>
+              )}
+            </div>
+          );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
 </body>
 </html>
